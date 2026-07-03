@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="ko" data-font="2">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="description" content="효자손 — 서류 사진 한 장으로 쉬운말 풀이, 할 일, 사기 판별까지. 어르신 전용 AI 웹앱">
+<meta name="theme-color" content="#1B6BD6">
+<title>효자손 — 서류 읽어주는 AI 손주</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤲</text></svg>">
+<link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+
+<!-- ============ 홈 ============ -->
+<section class="view" id="view-home">
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-name"><span class="brand-ic" data-icon="hand"></span> 효자손</span>
+      <span class="brand-sub">서류 읽어주는 AI 손주</span>
+    </div>
+    <nav class="desktop-nav">
+      <button class="nav-link" data-view="home">홈</button>
+      <button class="nav-link" data-view="history">기록</button>
+      <button class="nav-link" data-view="help">내 정보</button>
+    </nav>
+    <button class="icon-btn" id="btn-help" aria-label="도움말" data-icon="help"></button>
+  </header>
+  <main class="landing">
+    <input type="file" id="file-input" accept="image/*" capture="environment" hidden>
+
+    <!-- Hero -->
+    <section class="hero">
+      <img class="hero-img" src="/img/hero.jpg" alt="스마트폰을 함께 보는 다정한 어르신 부부">
+      <div class="hero-text">
+        <h1 class="hero-title">어르신의 똑똑한<br><span class="accent">AI 손주, 효자손</span></h1>
+        <p class="hero-sub">복잡한 서류나 고지서,<br>사진만 찍으세요.<br>효자손이 쉽고 친절하게 설명해 드립니다.</p>
+        <button class="big-cta pill" id="btn-camera">
+          <span class="cta-emoji" data-icon="camera"></span>
+          <span class="cta-label">시작하기</span>
+        </button>
+        <button class="outline-btn" id="btn-sample"><span class="ic-inline" data-icon="file"></span> 샘플 서류로 체험하기</button>
+      </div>
+    </section>
+
+    <!-- How to -->
+    <section class="howto">
+      <h2 class="landing-h2">사용 방법은 아주 쉽습니다</h2>
+      <div class="steps">
+        <div class="step-box">
+          <span class="step-circle blue" data-icon="camera"></span>
+          <h3 class="step-title blue">1. 찰칵!</h3>
+          <p>궁금한 서류나 고지서를 사진으로 찍으세요.</p>
+        </div>
+        <div class="step-box">
+          <span class="step-circle green" data-icon="checkbig"></span>
+          <h3 class="step-title green">2. 확인!</h3>
+          <p>큰 글씨로 쉽고 명확하게 내용을 알려드립니다.</p>
+        </div>
+        <div class="step-box">
+          <span class="step-circle yellow" data-icon="chat"></span>
+          <h3 class="step-title yellow">3. 살펴요!</h3>
+          <p>할 일과 사기 여부까지 꼼꼼히 살펴드립니다.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Feature: easy words -->
+    <section class="feature">
+      <img class="feature-img" src="/img/feature-explain.jpg" alt="로봇이 어르신께 책을 짚으며 설명하는 그림">
+      <div class="feature-text">
+        <h2 class="landing-h2 left">어려운 말은<br><span class="accent">쉬운 말로 쏙쏙</span></h2>
+        <p>병원 진단서, 관공서 우편물, 복잡한 영수증… 이해하기 힘든 말들을 효자손이 큰 글씨와 쉬운 우리말로 바꿔 설명해 드립니다.</p>
+      </div>
+    </section>
+
+    <!-- Feature: family sharing -->
+    <section class="feature reverse">
+      <img class="feature-img" src="/img/feature-family.jpg" alt="가족 체크리스트가 표시된 태블릿을 든 모습">
+      <div class="feature-text">
+        <h2 class="landing-h2 left">가족과 함께<br><span class="accent green">안심 공유</span></h2>
+        <p>중요한 내용은 자녀나 가족에게 바로 공유할 수 있습니다.<br>든든한 가족과 함께 확인하세요.</p>
+      </div>
+    </section>
+
+    <!-- Trust -->
+    <section class="trust-hero">
+      <span class="trust-shield" data-icon="lock"></span>
+      <h2>안심하고 사용하세요</h2>
+      <p>찍으신 사진은 저장되지 않고, 내용 분석 후 <strong>즉시 안전하게 삭제</strong>됩니다.</p>
+    </section>
+
+    <footer class="landing-footer">
+      <p>어르신의 개인정보는 안전하게 보호됩니다.</p>
+      <div class="footer-links">
+        <a href="#" id="link-terms">이용약관</a>
+        <a href="#" id="link-privacy">개인정보 처리방침</a>
+      </div>
+    </footer>
+  </main>
+</section>
+
+<!-- ============ 기록 (지난 서류 다시 보기) ============ -->
+<section class="view" id="view-history">
+  <header class="topbar">
+    <h1 class="topbar-title">지난 서류 다시 보기</h1>
+    <nav class="desktop-nav">
+      <button class="nav-link" data-view="home">홈</button>
+      <button class="nav-link" data-view="history">기록</button>
+      <button class="nav-link" data-view="help">내 정보</button>
+    </nav>
+    <button class="text-btn" id="btn-clear-history">모두 지우기</button>
+  </header>
+  <main>
+    <div id="history-list"></div>
+    <p class="empty-note" id="history-empty">아직 본 서류가 없어요.<br>홈에서 "시작하기"를 눌러 시작해보세요.</p>
+  </main>
+</section>
+
+<!-- ============ 결과 ============ -->
+<section class="view view-with-bar" id="view-result">
+  <header class="topbar">
+    <button class="icon-btn" id="btn-back" aria-label="뒤로 가기" data-icon="back"></button>
+    <h1 class="topbar-title">분석 결과</h1>
+  </header>
+
+  <div class="risk-banner warning" id="risk-banner"></div>
+
+  <main>
+    <span class="doc-chip" id="doc-type"></span>
+    <h2 class="one-line" id="one-line"></h2>
+
+    <div class="danger-box" id="danger-box" style="display:none">
+      <h3><span class="ic-inline" data-icon="siren"></span> 왜 조심해야 하나요?</h3>
+      <p id="danger-reason"></p>
+      <div id="danger-actions">
+        <p class="family-first">돈을 보내기 전에, 가족에게 먼저 물어보세요!</p>
+        <div class="tel-btns">
+          <a class="tel-btn" href="tel:112"><span class="ic-inline" data-icon="phone"></span> 경찰 신고 112</a>
+          <a class="tel-btn secondary" href="tel:1332"><span class="ic-inline" data-icon="phone"></span> 금융감독원 1332</a>
+          <a class="tel-btn secondary" href="tel:118"><span class="ic-inline" data-icon="phone"></span> 스미싱 신고 118</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="card-keypoints" style="display:none">
+      <div class="card-head yellow"><span class="ic-inline" data-icon="warning"></span> 꼭 기억하세요</div>
+      <div class="card-body"><ul id="keypoint-list"></ul></div>
+    </div>
+
+    <div class="card" id="card-todo">
+      <div class="card-head"><span class="ic-inline" data-icon="checklist"></span> 할 일</div>
+      <div class="card-body"><ul id="todo-list"></ul></div>
+    </div>
+
+    <div class="card">
+      <div class="card-head blue"><span class="ic-inline" data-icon="book"></span> 쉬운 설명</div>
+      <div class="card-body"><p id="easy-text"></p></div>
+    </div>
+
+    <div class="card" id="card-words">
+      <div class="card-head yellow"><span class="ic-inline" data-icon="words"></span> 어려운 말 풀이</div>
+      <div class="card-body"><ul id="word-list"></ul></div>
+    </div>
+
+    <div class="card" id="card-factcheck" style="display:none">
+      <div class="card-head blue"><span class="ic-inline" data-icon="verify"></span> 사실 확인</div>
+      <div class="card-body"><ul id="factcheck-list"></ul></div>
+    </div>
+
+    <label class="share-original" id="share-original-row" style="display:none">
+      <input type="checkbox" id="chk-share-original">
+      가족에게 보낼 때 서류 원본 사진도 함께 보내기
+    </label>
+  </main>
+
+  <nav class="action-bar">
+    <button class="action-btn" id="btn-speak">
+      <span class="action-icon" data-icon="volume"></span><span class="action-label">듣기</span>
+    </button>
+    <button class="action-btn" id="btn-font">
+      <span class="action-icon" data-icon="textsize"></span><span class="action-label">글자 크기</span>
+    </button>
+    <button class="action-btn" id="btn-save">
+      <span class="action-icon" data-icon="save"></span><span class="action-label">사진 저장</span>
+    </button>
+    <button class="action-btn" id="btn-share">
+      <span class="action-icon" data-icon="send"></span><span class="action-label">가족에게</span>
+    </button>
+  </nav>
+</section>
+
+<!-- ============ 내 정보 (도움말) ============ -->
+<section class="view" id="view-help">
+  <header class="topbar">
+    <h1 class="topbar-title">내 정보 · 도움말</h1>
+    <nav class="desktop-nav">
+      <button class="nav-link" data-view="home">홈</button>
+      <button class="nav-link" data-view="history">기록</button>
+      <button class="nav-link" data-view="help">내 정보</button>
+    </nav>
+  </header>
+  <main>
+    <div class="step-card">
+      <span class="step-num">1</span>
+      <span class="step-emoji" data-icon="camera"></span>
+      <span class="step-text">서류를 사진으로 찍어요</span>
+      <span class="step-sub">고지서·약관·계약서·문자·병원 안내 무엇이든 좋아요</span>
+    </div>
+    <div class="step-card">
+      <span class="step-num">2</span>
+      <span class="step-emoji" data-icon="robot"></span>
+      <span class="step-text">효자손이 쉽게 풀어드려요</span>
+      <span class="step-sub">무슨 서류인지, 사기는 아닌지 알려드려요</span>
+    </div>
+    <div class="step-card">
+      <span class="step-num">3</span>
+      <span class="step-emoji" data-icon="checkbig"></span>
+      <span class="step-text">할 일을 확인하고 가족과 나눠요</span>
+      <span class="step-sub">결과를 사진으로 저장하고 보낼 수 있어요</span>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><span class="ic-inline" data-icon="file"></span> 이런 것도 찍어보세요</div>
+      <div class="card-body">
+        <ul class="doc-kinds">
+          <li>🧾 고지서·납부서 (건강보험, 세금, 공과금)</li>
+          <li>📱 약관·계약서 (휴대폰, 보험, 대출)</li>
+          <li>💬 문자 안내 (택배, 예약, 은행, 관공서)</li>
+          <li>💊 병원·약 안내 (처방, 복약, 퇴원 안내)</li>
+          <li>✍️ 신청서·동의서</li>
+          <li>💝 복지·혜택 안내문</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head blue"><span class="ic-inline" data-icon="lock"></span> 안심하세요</div>
+      <div class="card-body">
+        <p id="privacy-text" style="font-size:1.1rem;font-weight:700;line-height:1.65">
+          이 서비스는 사진을 저장하지 않아요.
+          분석이 끝나면 사진은 바로 사라져요.
+          내 기록은 내 휴대폰에만 보관됩니다.
+        </p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head yellow"><span class="ic-inline" data-icon="siren"></span> 사기가 의심되면</div>
+      <div class="card-body">
+        <div class="tel-btns" style="margin-top:0">
+          <a class="tel-btn" href="tel:112"><span class="ic-inline" data-icon="phone"></span> 경찰 신고 112</a>
+          <a class="tel-btn secondary" href="tel:1332"><span class="ic-inline" data-icon="phone"></span> 금융감독원 1332</a>
+          <a class="tel-btn secondary" href="tel:118"><span class="ic-inline" data-icon="phone"></span> 스미싱 신고 118</a>
+        </div>
+        <p style="font-size:1rem;font-weight:700;color:var(--gray);margin-top:0.8rem;line-height:1.5">
+          112 경찰 신고 · 1332 금융 상담(계좌 막기) · 118 문자 사기 신고
+        </p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head blue"><span class="ic-inline" data-icon="chat"></span> 무엇이든 궁금하면</div>
+      <div class="card-body">
+        <div class="tel-btns" style="margin-top:0">
+          <a class="tel-btn" href="tel:110"><span class="ic-inline" data-icon="phone"></span> 정부 민원 상담 110</a>
+          <a class="tel-btn secondary" href="tel:129"><span class="ic-inline" data-icon="phone"></span> 복지 상담 129</a>
+        </div>
+        <p style="font-size:1rem;font-weight:700;color:var(--gray);margin-top:0.8rem;line-height:1.5">
+          어디에 물어야 할지 모를 때 110 · 기초연금·복지는 129
+        </p>
+      </div>
+    </div>
+
+  </main>
+</section>
+
+<!-- ============ 이용약관 ============ -->
+<section class="view" id="view-terms">
+  <header class="topbar">
+    <button class="icon-btn" id="btn-terms-back" aria-label="뒤로 가기" data-icon="back"></button>
+    <h1 class="topbar-title">이용약관</h1>
+  </header>
+  <main class="legal">
+    <div class="legal-summary">
+      <strong>쉬운 요약</strong>
+      <ul>
+        <li>효자손은 <b>무료</b>로 쓰는 서비스예요.</li>
+        <li>효자손이 알려주는 내용은 <b>참고용</b>이에요. 특히 사기 여부는 <b>도와주는 것</b>일 뿐, 마지막 판단은 기관·가족과 꼭 확인하세요.</li>
+        <li>사진은 <b>저장하지 않고</b> 분석 후 바로 지웁니다.</li>
+      </ul>
+    </div>
+
+    <h2>제1조 (목적)</h2>
+    <p>이 약관은 ‘효자손’(이하 “서비스”)의 이용 조건과 절차, 이용자와 운영자의 권리·의무를 정합니다. 본 서비스는 K-AI Contents Award 출품작으로 개인 개발자가 비영리로 운영합니다.</p>
+
+    <h2>제2조 (서비스 내용)</h2>
+    <p>서비스는 이용자가 촬영·업로드한 서류·문자 사진을 인공지능(AI)으로 분석하여, 쉬운 말 설명·할 일·사기 위험도 등을 제공합니다. 회원가입 없이 누구나 무료로 이용할 수 있습니다.</p>
+
+    <h2>제3조 (분석 결과의 성격과 한계 — 중요)</h2>
+    <ul>
+      <li>AI 분석 결과는 <b>정보 제공을 위한 참고 자료</b>이며, 그 정확성·완전성을 보장하지 않습니다.</li>
+      <li>사기·위험 판별은 피해 예방을 돕는 <b>보조 수단</b>입니다. ‘안전’으로 표시되어도 사기가 아님을 보장하지 않으며, 실제 여부는 해당 기관·가족·전문가에게 확인해야 합니다.</li>
+      <li>서비스는 의료·법률·금융에 관한 전문적 판단이나 자문을 제공하지 않습니다.</li>
+      <li>이용자가 분석 결과만을 신뢰하여 내린 결정과 그 결과에 대해 운영자는 법적 책임을 지지 않습니다.</li>
+    </ul>
+
+    <h2>제4조 (이용자의 의무)</h2>
+    <p>이용자는 타인의 개인정보가 담긴 서류를 무단으로 올리지 않아야 하며, 서비스를 불법·부정한 목적으로 사용하거나 정상 운영을 방해하는 행위를 해서는 안 됩니다.</p>
+
+    <h2>제5조 (지식재산권 및 출처)</h2>
+    <p>서비스는 공공데이터포털(한국인터넷진흥원 피싱사이트 URL, 국세청 사업자등록, 국토교통부 실거래가), 금융감독원 DART 등 공공데이터와 오픈소스 자산을 출처 표기 및 라이선스에 따라 이용합니다. 각 데이터·자산의 권리는 원저작자·제공기관에 있습니다.</p>
+
+    <h2>제6조 (서비스의 변경·중단)</h2>
+    <p>운영자는 서비스의 내용을 변경하거나 운영을 중단할 수 있으며, 무료·비영리 서비스 특성상 중단으로 인한 손해에 대해 책임을 지지 않습니다.</p>
+
+    <h2>제7조 (준거법)</h2>
+    <p>이 약관은 대한민국 법령에 따라 해석·적용됩니다.</p>
+
+    <p class="legal-meta">시행일: 2026년 7월 3일<br>문의: dcmsai@dc.ms.kr</p>
+    <button class="full-btn" id="btn-terms-home">처음 화면으로 돌아가기</button>
+  </main>
+</section>
+
+<!-- ============ 개인정보 처리방침 ============ -->
+<section class="view" id="view-privacy">
+  <header class="topbar">
+    <button class="icon-btn" id="btn-privacy-back" aria-label="뒤로 가기" data-icon="back"></button>
+    <h1 class="topbar-title">개인정보 처리방침</h1>
+  </header>
+  <main class="legal">
+    <div class="legal-summary">
+      <strong>쉬운 요약</strong>
+      <ul>
+        <li>효자손은 이름·전화번호 같은 <b>개인정보를 모으지 않아요.</b></li>
+        <li>찍은 사진은 <b>서버에 저장하지 않고</b>, 분석이 끝나면 <b>바로 지웁니다.</b></li>
+        <li>분석 결과는 <b>내 휴대폰에만</b> 저장되고, 언제든 지울 수 있어요.</li>
+        <li>사진은 분석을 위해 해외 AI(구글·오픈AI)로 잠깐 전송됩니다.</li>
+      </ul>
+    </div>
+
+    <h2>1. 수집하지 않는 정보 (비수집 원칙)</h2>
+    <p>본 서비스는 회원가입이 없으며, 이름·연락처·주민등록번호 등 개인정보를 수집·보관하지 않습니다. 서버는 어떤 이용자 정보도 저장하지 않는 무상태(stateless) 방식으로 동작합니다.</p>
+
+    <h2>2. 사진(서류 이미지)의 처리</h2>
+    <ul>
+      <li>이용자가 올린 사진은 <b>오직 분석 목적</b>으로만 사용되며, 분석 응답 후 <b>즉시 폐기</b>됩니다. 서버·로그에 저장하지 않습니다.</li>
+      <li>분석을 위해 사진은 아래 AI 처리기관으로 전송됩니다(국외 이전 포함). 유료 API를 사용하여 입력 데이터가 모델 학습에 활용되지 않도록 합니다.</li>
+    </ul>
+
+    <h2>3. 국외 이전 및 처리위탁</h2>
+    <table class="legal-table">
+      <tr><th>받는 자</th><th>목적</th><th>항목</th></tr>
+      <tr><td>Google (Gemini API)</td><td>서류 이미지 분석</td><td>업로드한 사진</td></tr>
+      <tr><td>OpenAI (gpt-5.4-nano)</td><td>서류 이미지 분석(대체·폴백)</td><td>업로드한 사진</td></tr>
+      <tr><td>공공데이터포털·금융감독원 DART</td><td>피싱 URL·사업자·시세·기업 대조</td><td>서류에서 추출한 URL·사업자번호·기관/업체명(개인정보 아님)</td></tr>
+    </table>
+    <p class="legal-note">각 기관의 서버는 국외에 있을 수 있습니다. 위 처리는 사진 분석이라는 서비스 제공에 필수적이며, 전송된 사진은 처리 후 보관되지 않습니다.</p>
+
+    <h2>4. 기기 내 저장 (내 휴대폰에만 보관)</h2>
+    <p>‘지난 서류 다시 보기’ 기능을 위해 <b>분석 결과 텍스트만</b> 이용자 기기의 브라우저 저장소(IndexedDB)에 저장합니다. 사진 원본은 저장하지 않습니다. 이 기록은 서버로 전송되지 않으며, 이용자가 언제든 개별·전체 삭제할 수 있습니다.</p>
+
+    <h2>5. 접속 정보</h2>
+    <p>서비스 남용·과금 폭주를 막기 위해 접속 IP를 <b>일시적으로만</b> 사용하여 요청 횟수를 제한합니다. 이 정보는 별도로 저장하거나 다른 목적에 사용하지 않습니다.</p>
+
+    <h2>6. 개인정보의 보관·파기</h2>
+    <p>서버는 개인정보를 보관하지 않으므로 별도 파기 절차가 필요하지 않습니다. 기기 내 기록은 이용자가 직접 삭제하거나, 브라우저 데이터를 지우면 사라집니다.</p>
+
+    <h2>7. 이용자의 권리</h2>
+    <p>이용자는 기기 내 기록을 언제든 확인·삭제할 수 있습니다. 서비스가 보관하는 개인정보가 없으므로 열람·정정·삭제 요청 대상 정보가 존재하지 않습니다.</p>
+
+    <h2>8. 아동의 개인정보</h2>
+    <p>본 서비스는 개인정보를 수집하지 않으며, 특정 연령을 대상으로 정보를 수집하지 않습니다.</p>
+
+    <h2>9. 개인정보 보호책임 및 문의</h2>
+    <p>개인정보 처리에 관한 문의는 아래로 연락해 주세요.<br><b>이메일: dcmsai@dc.ms.kr</b></p>
+
+    <h2>10. 고지의 의무</h2>
+    <p>이 방침이 변경되면 서비스 내 공지를 통해 알립니다.</p>
+
+    <p class="legal-meta">시행일: 2026년 7월 3일</p>
+    <button class="full-btn" id="btn-privacy-home">처음 화면으로 돌아가기</button>
+  </main>
+</section>
+
+<!-- ============ 하단 탭바 (홈/기록/내 정보) ============ -->
+<nav class="tabbar" id="tabbar">
+  <button class="tab-btn" id="tab-home" data-view="home">
+    <span class="tab-ic" data-icon="home"></span><span class="tab-label">홈</span>
+  </button>
+  <button class="tab-btn" id="tab-history" data-view="history">
+    <span class="tab-ic" data-icon="history"></span><span class="tab-label">기록</span>
+  </button>
+  <button class="tab-btn" id="tab-info" data-view="help">
+    <span class="tab-ic" data-icon="person"></span><span class="tab-label">내 정보</span>
+  </button>
+</nav>
+
+<!-- ============ 샘플 선택 ============ -->
+<div class="overlay" id="sample-dialog">
+  <div class="sheet">
+    <h2>📄 어떤 서류로 체험해볼까요?</h2>
+    <div id="sample-list"></div>
+    <button class="close-btn" id="btn-sample-close">닫기</button>
+  </div>
+</div>
+
+<!-- ============ 샘플 미리보기 ============ -->
+<div class="overlay" id="sample-preview">
+  <div class="sheet">
+    <h2>이런 서류가 왔다고 해볼게요</h2>
+    <img id="sample-preview-img" alt="체험용 가상 서류">
+    <button class="full-btn" id="btn-sample-analyze"><span class="ic-inline" data-icon="verify"></span> 이 서류 읽어줘</button>
+  </div>
+</div>
+
+<!-- ============ 다시 찍기 안내 ============ -->
+<div class="overlay" id="retake-dialog">
+  <div class="sheet">
+    <h2>📷 사진을 다시 찍어주세요</h2>
+    <p style="font-size:1.15rem;font-weight:700;line-height:1.65;margin-bottom:1rem">
+      글자가 잘 보이지 않았어요.<br>
+      ① 밝은 곳에서<br>
+      ② 서류 전체가 나오게<br>
+      ③ 흔들리지 않게 찍어주세요.
+    </p>
+    <button class="full-btn" id="btn-retake"><span class="ic-inline" data-icon="camera"></span> 다시 찍기</button>
+    <button class="close-btn" id="btn-retake-close">닫기</button>
+  </div>
+</div>
+
+<div id="loading" role="status">
+  <div class="spinner"></div>
+  <p id="loading-text">서류를 읽고 있어요…</p>
+</div>
+
+<div id="toast" role="alert"></div>
+
+<script type="module" src="/js/app.js"></script>
+</body>
+</html>

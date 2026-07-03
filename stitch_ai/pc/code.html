@@ -1,0 +1,171 @@
+<!DOCTYPE html><html lang="ko" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>효자손 - 어려운 글, 쉽게 읽어드려요</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;700;900&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#1B6BD6",
+                        "primary-hover": "#1558b0",
+                        text: "#1A1A1A",
+                        background: "#FFFFFF",
+                        surface: "#F3F4F6",
+                        success: "#1E8E3E",
+                        warning: "#F9AB00",
+                        danger: "#D93025"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                        "3xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                    fontFamily: {
+                        "headline": ["Public Sans", "sans-serif"],
+                        "display": ["Public Sans", "sans-serif"],
+                        "body": ["Public Sans", "sans-serif"],
+                        "label": ["Public Sans", "sans-serif"]
+                    },
+                    fontSize: {
+                        "base": "20px",
+                        "lg": "24px",
+                        "xl": "28px",
+                        "2xl": "32px",
+                        "3xl": "40px",
+                        "4xl": "48px"
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Public Sans', sans-serif;
+            color: #1A1A1A;
+            background-color: #FFFFFF;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 48;
+        }
+    </style>
+</head>
+<body class="bg-background text-text font-body min-h-screen flex flex-col pt-20">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full bg-white border-b-2 border-gray-100 shadow-sm flex justify-between items-center h-20 px-6 z-50">
+<div class="flex items-center gap-4">
+<button aria-label="메뉴" class="text-text hover:bg-gray-100 p-2 rounded-full active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[32px]" data-icon="menu">menu</span>
+</button>
+<h1 class="font-headline text-2xl md:text-3xl font-black text-primary tracking-tight">효자손</h1>
+</div>
+<nav class="hidden md:flex gap-8 items-center">
+<a class="font-bold text-primary text-xl hover:bg-gray-100 px-4 py-2 rounded-lg" href="#">홈</a>
+<a class="font-bold text-text text-xl hover:bg-gray-100 px-4 py-2 rounded-lg" href="#">기록</a>
+<a class="font-bold text-text text-xl hover:bg-gray-100 px-4 py-2 rounded-lg" href="#">내 정보</a>
+</nav>
+<button aria-label="도움말" class="text-text hover:bg-gray-100 p-2 rounded-full active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[32px]" data-icon="help">help</span>
+</button>
+</header>
+<main class="flex-grow flex flex-col items-center w-full pb-32 md:pb-0">
+<!-- Hero Section -->
+<section class="w-full max-w-7xl mx-auto py-16 md:py-24 flex flex-col md:flex-row items-center gap-12 md:px-12 px-4">
+<div class="w-full md:w-1/2 flex flex-col items-start gap-8 md:pl-20">
+<h2 class="font-display text-3xl md:text-4xl font-extrabold leading-tight">어려운 글자,<br>사진만 찍으면<br>쉽게 읽어드려요</h2>
+<p class="text-xl md:text-2xl text-gray-700 font-medium leading-relaxed">복잡한 우편물, 영수증, 안내문까지.<br>효자손이 어르신 눈높이에 맞춰<br>친절하게 설명해 드립니다.</p>
+<button class="bg-primary text-white font-bold text-2xl py-6 px-12 rounded-2xl w-full md:w-auto shadow-lg hover:bg-primary-hover active:scale-95 transition-transform flex items-center justify-center gap-4">
+<span class="material-symbols-outlined text-[32px]" data-icon="photo_camera">photo_camera</span>
+                    지금 바로 시작하기
+                </button>
+<div class="flex items-center gap-3 bg-green-50 text-success p-4 rounded-xl w-full md:w-auto border border-green-200 mt-4">
+<span class="material-symbols-outlined text-[28px]" data-icon="lock">lock</span>
+<span class="font-bold text-lg">어르신의 개인정보는 안전하게 보호됩니다.</span>
+</div>
+</div>
+<div class="w-full md:w-1/2 flex justify-center">
+<img alt="스마트폰을 함께 보며 즐거워하는 어르신 부부" class="w-full max-w-[500px] h-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAxGvnsKp0aUV9YujAVNNPw3FsXqvs-ot_iVmVwpjM7LgR9ZvYtNUv1bwAegtavbrS818B4Ze2G1EZ6harilUtT13YCcMvaSFg3YwYUtjJP2DI2JN3R6LXYTqDflLQem_q76tU-vslZDneGD396zfJVSPXJiGPti-D_i4taEO3Hdb930LmX-stNENmAY7v6HpfgFF64FXG_LpJVIGk0Gr2xFC00Qqz6zurKkI2vCTnFUd6-8osqH3wEQA" style="clip-path: inset(0% round 20%);">
+</div>
+</section>
+<!-- How it works Section -->
+<section class="w-full bg-surface py-20 px-6">
+<div class="max-w-7xl mx-auto flex flex-col items-center">
+<h2 class="font-display text-3xl font-extrabold text-center mb-16">사용 방법은 아주 간단해요</h2>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8 w-full">
+<!-- Step 1 -->
+<div class="bg-white p-8 rounded-3xl shadow-md flex flex-col items-center text-center gap-6">
+<div class="bg-blue-50 text-primary p-6 rounded-full">
+<span class="material-symbols-outlined text-[64px]" data-icon="photo_camera">photo_camera</span>
+</div>
+<h3 class="font-bold text-2xl">1. 사진 찍기</h3>
+<p class="text-xl text-gray-600">이해하기 어려운 글자를<br>스마트폰 카메라로<br>찍어주세요.</p>
+</div>
+<!-- Step 2 -->
+<div class="bg-white p-8 rounded-3xl shadow-md flex flex-col items-center text-center gap-6">
+<div class="bg-blue-50 text-primary p-6 rounded-full">
+<span class="material-symbols-outlined text-[64px]" data-icon="search">search</span>
+</div>
+<h3 class="font-bold text-2xl">2. 확인하기</h3>
+<p class="text-xl text-gray-600">효자손이 큰 글씨와<br>쉬운 말로 바꿔서<br>보여드려요.</p>
+</div>
+<!-- Step 3 -->
+<div class="bg-white p-8 rounded-3xl shadow-md flex flex-col items-center text-center gap-6">
+<div class="bg-blue-50 text-primary p-6 rounded-full">
+<span class="material-symbols-outlined text-[64px]" data-icon="record_voice_over">record_voice_over</span>
+</div>
+<h3 class="font-bold text-2xl">3. 물어보기</h3>
+<p class="text-xl text-gray-600">더 궁금한 점이 있다면<br>음성으로 편하게<br>물어보세요.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Robot Helper Section -->
+<section class="w-full max-w-7xl mx-auto px-6 py-20 flex flex-col md:flex-row-reverse items-center gap-12">
+<div class="w-full md:w-1/2 flex flex-col items-start gap-8">
+<h2 class="font-display text-3xl font-extrabold leading-tight">
+                    똑똑한 도우미가<br>항상 곁에 있어요
+                </h2>
+<p class="text-xl text-gray-700 font-medium leading-relaxed">어려운 단어가 나오면<br>친절한 도우미가 돋보기로 확대하듯<br>상세하고 쉽게 풀어서<br>설명해 드립니다.</p>
+</div>
+<div class="w-full md:w-1/2 flex justify-center">
+<img alt="어르신 부부에게 친절하게 설명해주는 로봇 도우미" class="w-full max-w-[500px] h-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAAewDi2Iz8M8ZnZmzh56XsPx2LfBrFMJvW6RkHNzyPg3Zzv0pygVbOVcI2LyW7k49bncIyqW2maxLqeN6D83aKFabcrbBFSrckYotYZtJwfoKqNmZ8TWQhTV20m5ID5i84vWlemlOjn0zkdR2lqTuER6zKUQ98OLZJNpqIJZdwqPlq-s-g98O_qJqTwh_lt3Y3CaKKkHv822FnLZTvOgiTr93XhM1ST4DbFYykQeJZQGnB3XB7Z7qxKw" style="clip-path: inset(0% round 20%);">
+</div>
+</section>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full h-28 bg-white rounded-t-[24px] border-t-2 border-gray-100 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] z-50 flex justify-around items-center px-4 pb-4">
+<a class="flex flex-col items-center justify-center text-primary bg-blue-50 rounded-xl px-6 py-2 active:opacity-80 touch-manipulation" href="#">
+<span class="material-symbols-outlined text-[32px] mb-1" data-icon="home" data-weight="fill">home</span>
+<span class="font-label text-[20px] font-bold">홈</span>
+</a>
+<a class="flex flex-col items-center justify-center text-text px-6 py-2 active:opacity-80 touch-manipulation hover:bg-gray-50 rounded-xl" href="#">
+<span class="material-symbols-outlined text-[32px] mb-1" data-icon="history">history</span>
+<span class="font-label text-[20px] font-bold">기록</span>
+</a>
+<a class="flex flex-col items-center justify-center text-text px-6 py-2 active:opacity-80 touch-manipulation hover:bg-gray-50 rounded-xl" href="#">
+<span class="material-symbols-outlined text-[32px] mb-1" data-icon="person">person</span>
+<span class="font-label text-[20px] font-bold">내 정보</span>
+</a>
+</nav>
+<!-- Footer -->
+<footer class="w-full py-12 mb-28 md:mb-0 bg-gray-50 flex flex-col items-center gap-4 text-center px-8 border-t border-gray-200 mt-auto">
+<div class="flex gap-6 mb-4">
+<a class="font-body text-[18px] text-gray-500 hover:text-black" href="#">이용약관</a>
+<a class="font-body text-[18px] text-gray-500 hover:text-black" href="#">개인정보 처리방침</a>
+</div>
+<p class="font-body text-[18px] text-gray-600">어르신의 개인정보는 안전하게 보호됩니다.</p>
+<p class="font-body text-[16px] text-gray-400 mt-2">© 2024 효자손. All rights reserved.</p>
+</footer>
+
+
+</body></html>

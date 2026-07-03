@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+
+<html lang="ko"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>효자손 - 서류 읽어주는 AI 손주</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#1B6BD6",
+                        safe: "#1E8E3E",
+                        warning: "#F9AB00",
+                        danger: "#D93025",
+                        text: "#1A1A1A",
+                        bg: "#FFFFFF"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                        "3xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                    fontFamily: {
+                        headline: ["Public Sans", "sans-serif"],
+                        display: ["Public Sans", "sans-serif"],
+                        body: ["Public Sans", "sans-serif"],
+                        label: ["Public Sans", "sans-serif"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Public Sans', sans-serif;
+            background-color: #FFFFFF;
+            color: #1A1A1A;
+            padding-top: 5rem;
+            padding-bottom: 7rem;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="min-h-screen bg-bg text-text">
+<!-- TopAppBar -->
+<header class="bg-white dark:bg-black fixed top-0 w-full border-b-2 border-gray-100 shadow-sm flex justify-between items-center h-20 px-6 z-50">
+<div class="flex items-center gap-4">
+<button aria-label="메뉴" class="p-2 hover:bg-gray-100 rounded-full active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[32px] font-black text-[#1B6BD6]">menu</span>
+</button>
+<div class="flex flex-col">
+<h1 class="font-headline text-[32px] font-bold tracking-tight text-[#1B6BD6]">효자손</h1>
+<span class="text-[20px] text-gray-600 font-bold">서류 읽어주는 AI 손주</span>
+</div>
+</div>
+<button aria-label="도움말" class="p-2 hover:bg-gray-100 rounded-full active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[32px] text-[#1B6BD6]">help</span>
+</button>
+</header>
+<main class="px-6 py-8 flex flex-col gap-8 max-w-2xl mx-auto w-full">
+<!-- Main Action Area -->
+<section class="flex flex-col gap-4">
+<button class="w-full bg-[#1B6BD6] text-white rounded-3xl h-64 flex flex-col items-center justify-center gap-4 active:scale-[0.98] transition-transform shadow-lg active:opacity-90 touch-manipulation">
+<span class="text-[48px]">📷</span>
+<span class="font-display text-[36px] font-bold">서류 사진 찍기</span>
+</button>
+<p class="text-center text-[22px] font-bold text-gray-700 bg-blue-50 py-4 rounded-2xl">
+                고지서·안내문을 찍으면 쉽게 풀어드려요
+            </p>
+</section>
+<!-- Secondary Action -->
+<section>
+<button class="w-full h-24 border-4 border-[#1B6BD6] text-[#1B6BD6] rounded-2xl flex items-center justify-center gap-3 active:scale-[0.98] transition-transform touch-manipulation active:bg-blue-50">
+<span class="text-[28px]">📄</span>
+<span class="font-display text-[24px] font-bold">샘플 서류로 체험하기</span>
+</button>
+</section>
+<!-- History Area -->
+<section class="flex flex-col gap-4 mt-4 mb-20">
+<h2 class="font-headline text-[28px] font-bold text-gray-900 px-2">지난 서류 다시 보기</h2>
+<div class="flex flex-col gap-4">
+<!-- History Item 1 -->
+<button class="w-full h-24 bg-gray-50 rounded-2xl px-6 flex items-center gap-4 active:scale-[0.98] transition-transform touch-manipulation hover:bg-gray-100 shadow-sm border border-gray-100 text-left">
+<div class="w-12 h-12 rounded-full bg-safe flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-white" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div class="flex flex-col flex-grow">
+<span class="text-[24px] font-bold text-gray-900 truncate">건강보험 고지서</span>
+<span class="text-[18px] text-gray-500">2024.03.15</span>
+</div>
+<span class="material-symbols-outlined text-gray-400 text-[32px]">chevron_right</span>
+</button>
+<!-- History Item 2 -->
+<button class="w-full h-24 bg-gray-50 rounded-2xl px-6 flex items-center gap-4 active:scale-[0.98] transition-transform touch-manipulation hover:bg-gray-100 shadow-sm border border-gray-100 text-left">
+<div class="w-12 h-12 rounded-full bg-safe flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-white" style="font-variation-settings: 'FILL' 1;">info</span>
+</div>
+<div class="flex flex-col flex-grow">
+<span class="text-[24px] font-bold text-gray-900 truncate">복지 안내문</span>
+<span class="text-[18px] text-gray-500">2024.03.14</span>
+</div>
+<span class="material-symbols-outlined text-gray-400 text-[32px]">chevron_right</span>
+</button>
+<!-- History Item 3 -->
+<button class="w-full h-24 bg-gray-50 rounded-2xl px-6 flex items-center gap-4 active:scale-[0.98] transition-transform touch-manipulation hover:bg-gray-100 shadow-sm border border-gray-100 text-left">
+<div class="w-12 h-12 rounded-full bg-danger flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-white" style="font-variation-settings: 'FILL' 1;">warning</span>
+</div>
+<div class="flex flex-col flex-grow">
+<span class="text-[24px] font-bold text-gray-900 truncate">가짜 독촉장 의심</span>
+<span class="text-[18px] text-gray-500">2024.03.10</span>
+</div>
+<span class="material-symbols-outlined text-gray-400 text-[32px]">chevron_right</span>
+</button>
+</div>
+</section>
+</main>
+<!-- Trust Footer -->
+<footer class="bg-gray-50 w-full py-12 mb-28 flex flex-col items-center gap-4 text-center px-8">
+<p class="font-body text-[20px] text-gray-900 font-bold bg-white px-6 py-4 rounded-xl border border-gray-200 shadow-sm flex flex-col gap-2">
+<span class="text-[28px]">🔒</span>
+            사진은 저장하지 않아요.<br/>내 기록은 내 휴대폰에만 보관됩니다
+        </p>
+<p class="font-body text-[18px] text-gray-600 mt-4">어르신의 개인정보는 안전하게 보호됩니다.</p>
+<div class="flex gap-6 mt-2">
+<a class="text-[18px] text-gray-500 hover:text-black underline" href="#">이용약관</a>
+<a class="text-[18px] text-gray-500 hover:text-black underline" href="#">개인정보 처리방침</a>
+</div>
+</footer>
+<!-- BottomNavBar -->
+<nav class="bg-white dark:bg-black fixed bottom-0 w-full h-28 rounded-t-[24px] border-t-2 border-gray-100 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-4">
+<!-- Active Tab: 홈 -->
+<button class="flex flex-col items-center justify-center text-[#1B6BD6] bg-blue-50 rounded-xl px-6 py-2 h-20 active:opacity-80 touch-manipulation">
+<span class="material-symbols-outlined text-[32px]" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="font-label text-[20px] font-bold mt-1">홈</span>
+</button>
+<!-- Inactive Tab: 기록 -->
+<button class="flex flex-col items-center justify-center text-[#1A1A1A] px-6 py-2 h-20 hover:bg-gray-50 rounded-xl active:opacity-80 touch-manipulation">
+<span class="material-symbols-outlined text-[32px]">history</span>
+<span class="font-label text-[20px] font-bold mt-1">기록</span>
+</button>
+<!-- Inactive Tab: 내 정보 -->
+<button class="flex flex-col items-center justify-center text-[#1A1A1A] px-6 py-2 h-20 hover:bg-gray-50 rounded-xl active:opacity-80 touch-manipulation">
+<span class="material-symbols-outlined text-[32px]">person</span>
+<span class="font-label text-[20px] font-bold mt-1">내 정보</span>
+</button>
+</nav>
+</body></html>

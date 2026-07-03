@@ -1,0 +1,16 @@
+{
+  "name": "hyojason",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "효자손 — 서류 읽어주는 AI 손주 (K-AI Contents Award Track B)",
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel --prod"
+  },
+  "dependencies": {
+    "jpeg-js": "^0.4.4",
+    "jsqr": "^1.4.0",
+    "pngjs": "^7.0.0"
+  }
+}
