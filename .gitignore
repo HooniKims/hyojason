@@ -5,3 +5,10 @@
 node_modules
 .DS_Store
 .gstack/
+
+# 지원서 원고 (비공개 — 업로드 제외)
+효자손_지원서_기획.md
+효자손_지원서_제출본.md
+
+# 작업용 임시
+_workspace/
