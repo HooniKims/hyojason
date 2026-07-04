@@ -503,3 +503,15 @@ main { max-width: 640px; margin: 0 auto; padding: 1.2rem 1.2rem 2rem; }
 .legal-table th { background: var(--bg-soft); font-weight: 900; }
 .legal-meta { font-size: 1rem !important; color: var(--gray) !important; margin: 1.4rem 0 1rem; }
 .legal .full-btn { margin-top: 0.5rem; }
+
+/* ---------- 기록 화면: 모두 지우기 툴바 (리스트 바로 위) ---------- */
+.history-toolbar { display: flex; justify-content: flex-end; margin-bottom: 0.9rem; }
+.clear-all-btn {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  min-height: 3.2rem; padding: 0 1.1rem;
+  border: 2px solid var(--line); border-radius: 1rem;
+  background: #fff; color: var(--gray);
+  font-size: 1.1rem; font-weight: 800;
+}
+.clear-all-btn:active { background: #FDECEA; border-color: var(--danger); color: var(--danger); }
+.clear-all-btn .ic-inline .ic { width: 1.3rem; height: 1.3rem; }

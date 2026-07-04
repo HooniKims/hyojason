@@ -13,6 +13,17 @@ import { hydrateIcons, svgIcon } from './icons.js';
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => [...document.querySelectorAll(sel)];
 
+// XSS 방지: 모델·외부 유래 텍스트를 innerHTML에 넣기 전 반드시 이스케이프
+// (사진 속 악성 HTML 글자가 화면에서 스크립트로 실행되는 것을 차단)
+function esc(v) {
+  return String(v ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 const state = {
   result: null,        // 현재 결과 JSON
   originalFile: null,  // 분석 직후 세션에서만 유지 (무저장 원칙 — 화면 이탈 시 폐기)
@@ -33,7 +44,18 @@ const RISK_UI = {
 // 하단 탭바가 보이는 탭 화면
 const TAB_VIEWS = ['home', 'history', 'help'];
 
-function show(view) {
+// 방문 기록(네비 스택) — 뒤로가기 화살표가 실제 이전 페이지로 가도록
+let currentView = null;
+const navStack = [];
+
+function show(view, opts = {}) {
+  // 뒤로가기가 아니고 화면이 바뀌면 현재 화면을 스택에 쌓음
+  if (!opts.back && currentView && currentView !== view) {
+    navStack.push(currentView);
+    if (navStack.length > 20) navStack.shift();
+  }
+  currentView = view;
+
   $$('.view').forEach((v) => v.classList.remove('active'));
   $(`#view-${view}`).classList.add('active');
   window.scrollTo(0, 0);
@@ -49,6 +71,12 @@ function show(view) {
   if (tabbar) tabbar.style.display = TAB_VIEWS.includes(view) ? '' : 'none';
   // 하단 탭 + 데스크톱 상단 내비 모두 현재 화면 강조
   $$('[data-view]').forEach((b) => b.classList.toggle('active', b.dataset.view === view));
+}
+
+/** 뒤로가기: 방문 기록의 이전 화면으로 (없으면 홈) */
+function goBack() {
+  const prev = navStack.pop();
+  show(prev || 'home', { back: true });
 }
 
 /* ---------- 글자 크기 3단 ---------- */
@@ -205,7 +233,7 @@ function renderResult(result) {
   for (const kp of keypoints) {
     const li = document.createElement('li');
     li.className = 'keypoint-item';
-    li.innerHTML = `<span class="kp-dot">•</span><span class="kp-text">${kp}</span>`;
+    li.innerHTML = `<span class="kp-dot">•</span><span class="kp-text">${esc(kp)}</span>`;
     kpList.appendChild(li);
   }
   $('#card-keypoints').style.display = keypoints.length ? '' : 'none';
@@ -217,12 +245,12 @@ function renderResult(result) {
   for (const todo of todos) {
     const li = document.createElement('li');
     const meta = [
-      todo.기한 && `<span class="todo-meta">⏰ ${todo.기한}</span>`,
-      todo.장소 && `<span class="todo-meta">📍 ${todo.장소}</span>`,
-      todo.준비물 && `<span class="todo-meta">🎒 ${todo.준비물}</span>`,
+      todo.기한 && `<span class="todo-meta">⏰ ${esc(todo.기한)}</span>`,
+      todo.장소 && `<span class="todo-meta">📍 ${esc(todo.장소)}</span>`,
+      todo.준비물 && `<span class="todo-meta">🎒 ${esc(todo.준비물)}</span>`,
     ].filter(Boolean).join('');
     li.innerHTML = `<span class="todo-check">${svgIcon('checkbig')}</span>
-      <span class="todo-body"><span class="todo-main">${todo.내용 || ''}</span>${meta}</span>`;
+      <span class="todo-body"><span class="todo-main">${esc(todo.내용 || '')}</span>${meta}</span>`;
     todoList.appendChild(li);
   }
   $('#card-todo').style.display = todos.length ? '' : 'none';
@@ -236,7 +264,7 @@ function renderResult(result) {
   const words = result.낱말풀이 || [];
   for (const w of words) {
     const li = document.createElement('li');
-    li.innerHTML = `<span class="word-hard">${w.어려운말}</span><span class="word-easy">→ ${w.쉬운말}</span>`;
+    li.innerHTML = `<span class="word-hard">${esc(w.어려운말)}</span><span class="word-easy">→ ${esc(w.쉬운말)}</span>`;
     wordList.appendChild(li);
   }
   $('#card-words').style.display = words.length ? '' : 'none';
@@ -251,9 +279,9 @@ function renderResult(result) {
     const li = document.createElement('li');
     li.className = 'fact-item';
     const tel = c.전화
-      ? `<a class="fact-tel" href="tel:${c.전화.replace(/[^0-9]/g, '')}">${svgIcon('phone')} ${c.전화} 전화 걸기</a>`
+      ? `<a class="fact-tel" href="tel:${esc(c.전화.replace(/[^0-9]/g, ''))}">${svgIcon('phone')} ${esc(c.전화)} 전화 걸기</a>`
       : '';
-    li.innerHTML = `<span class="fact-icon ${iconCls}">${svgIcon(iconName)}</span><span class="fact-body"><span class="fact-kind">${c.종류}</span><span class="fact-text">${c.결과}</span>${tel}</span>`;
+    li.innerHTML = `<span class="fact-icon ${iconCls}">${svgIcon(iconName)}</span><span class="fact-body"><span class="fact-kind">${esc(c.종류)}</span><span class="fact-text">${esc(c.결과)}</span>${tel}</span>`;
     fcList.appendChild(li);
   }
   $('#card-factcheck').style.display = checks.length ? '' : 'none';
@@ -423,7 +451,7 @@ async function renderHistory() {
   } catch { /* IndexedDB 미지원 시 목록만 비움 */ }
   wrap.innerHTML = '';
   empty.style.display = records.length ? 'none' : '';
-  $('#btn-clear-history').style.display = records.length ? '' : 'none';
+  $('#history-toolbar').style.display = records.length ? '' : 'none';
 
   for (const rec of records.slice(0, 20)) {
     const date = new Date(rec.date).toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' });
@@ -433,8 +461,8 @@ async function renderHistory() {
       <button class="history-open">
         <span class="dot ${riskDot(rec.위험도)}"></span>
         <span class="history-text">
-          <span class="history-title">${rec.문서종류}</span>
-          <span class="history-date">${date}</span>
+          <span class="history-title">${esc(rec.문서종류)}</span>
+          <span class="history-date">${esc(date)}</span>
         </span>
         <span class="chev">${svgIcon('chevron')}</span>
       </button>
@@ -447,6 +475,8 @@ async function renderHistory() {
       show('result');
     });
     row.querySelector('.history-del').addEventListener('click', async () => {
+      // 어르신 오터치 방지: 개별 삭제도 한 번 확인
+      if (!confirm(`'${rec.문서종류}' 기록을 지울까요?`)) return;
       await deleteRecord(rec.id);
       renderHistory();
     });
@@ -479,23 +509,25 @@ function init() {
   });
 
   // 결과
-  $('#btn-back').addEventListener('click', () => show('home'));
+  $('#btn-back').addEventListener('click', goBack);
   $('#btn-speak').addEventListener('click', toggleSpeak);
   $('#btn-font').addEventListener('click', cycleFont);
   $('#btn-save').addEventListener('click', saveCard);
   $('#btn-share').addEventListener('click', shareToFamily);
 
-  // 상단 도움말 아이콘 + 하단 탭바 + 데스크톱 상단 내비
-  $('#btn-help').addEventListener('click', () => show('help'));
+  // 하단 탭바 + 데스크톱 상단 내비 (홈/기록/도움말)
   $$('[data-view]').forEach((b) => b.addEventListener('click', () => show(b.dataset.view)));
 
-  // 약관·개인정보 처리방침 (푸터 링크 + 뒤로가기)
+  // 약관·개인정보 처리방침 (푸터 링크 + 뒤로가기 화살표=이전페이지 / 홈버튼=처음화면)
   $('#link-terms').addEventListener('click', (e) => { e.preventDefault(); show('terms'); });
   $('#link-privacy').addEventListener('click', (e) => { e.preventDefault(); show('privacy'); });
-  $('#btn-terms-back').addEventListener('click', () => show('home'));
+  $('#btn-terms-back').addEventListener('click', goBack);
   $('#btn-terms-home').addEventListener('click', () => show('home'));
-  $('#btn-privacy-back').addEventListener('click', () => show('home'));
+  $('#btn-privacy-back').addEventListener('click', goBack);
   $('#btn-privacy-home').addEventListener('click', () => show('home'));
+  // 기록·도움말 화면의 뒤로가기 화살표
+  $('#btn-history-back').addEventListener('click', goBack);
+  $('#btn-help-back').addEventListener('click', goBack);
 
   // 다시 찍기 안내
   $('#btn-retake').addEventListener('click', () => {

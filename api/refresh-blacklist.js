@@ -19,9 +19,12 @@ const PER_PAGE = 1000;
 const MAX_PAGES = 40; // 40 × 1000 = 40,000건 상한 (현재 데이터 ~27,600건)
 
 export default async function handler(req, res) {
-  // Vercel Cron은 CRON_SECRET을 Authorization: Bearer로 전달
+  // 인증: Vercel Cron 요청(x-vercel-cron 헤더) 또는 CRON_SECRET Bearer 만 허용.
+  // 시크릿 미설정 상태에서 아무나 호출해 공공데이터 대량 fetch·KV 쓰기를 유발하는 것을 차단.
   const secret = process.env.CRON_SECRET;
-  if (secret && req.headers.authorization !== `Bearer ${secret}`) {
+  const isVercelCron = !!req.headers['x-vercel-cron'];
+  const authorized = isVercelCron || (secret && req.headers.authorization === `Bearer ${secret}`);
+  if (!authorized) {
     res.status(401).json({ error: 'unauthorized' });
     return;
   }

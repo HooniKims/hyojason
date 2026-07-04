@@ -27,14 +27,16 @@ function recentMonths(n) {
 }
 
 const MAX_BODY_BYTES = 4 * 1024 * 1024; // base64 포함 요청 상한
-const RATE_LIMIT = 20;                  // IP당 시간당 허용 횟수
+// IP당 시간당 허용 횟수. 복지관·경로당 등 공유 와이파이(같은 IP) 다중 사용을 고려해 넉넉히.
+// 비용의 최종 방어선은 모델 콘솔의 월 지출 한도이므로, 여기선 자동 공격만 걸러내는 수준.
+const RATE_LIMIT = Number(process.env.ANALYZE_RATE_LIMIT) || 100;
 const RATE_WINDOW_MS = 60 * 60 * 1000;
 
 // 인스턴스 단위 rate limit (서버리스 특성상 완전하지 않음 — 과금 폭주 1차 방어선.
 // 지출 한도는 모델 콘솔의 월 한도 설정이 최종 방어선)
 const hits = new Map();
 
-function rateLimited(ip) {
+function rateLimitedMem(ip) {
   const now = Date.now();
   const rec = hits.get(ip) || { count: 0, start: now };
   if (now - rec.start > RATE_WINDOW_MS) {
@@ -47,12 +49,45 @@ function rateLimited(ip) {
   return rec.count > RATE_LIMIT;
 }
 
+/**
+ * 공유 rate limit (Upstash KV) — 서버리스 인스턴스 간 공유되어 실제로 유효.
+ * KV 미설정이면 인스턴스 메모리 방식으로 폴백. 시간당 IP별 RATE_LIMIT회 초과 시 차단.
+ * 과금 폭탄의 코드 측 1차 방어선(최종 방어선은 모델 콘솔의 월 지출 한도).
+ */
+async function isRateLimited(ip) {
+  const base = process.env.KV_REST_API_URL;
+  const token = process.env.KV_REST_API_TOKEN;
+  if (!base || !token) return rateLimitedMem(ip);
+  try {
+    const bucket = Math.floor(Date.now() / RATE_WINDOW_MS);
+    const key = `rl:analyze:${ip}:${bucket}`;
+    const auth = { headers: { Authorization: `Bearer ${token}` } };
+    const incr = await fetch(`${base}/incr/${encodeURIComponent(key)}`, auth);
+    if (!incr.ok) return rateLimitedMem(ip);
+    const { result: count } = await incr.json();
+    if (count === 1) {
+      // 첫 요청에만 만료 설정 (윈도우 종료 시 자동 삭제)
+      await fetch(`${base}/expire/${encodeURIComponent(key)}/${Math.ceil(RATE_WINDOW_MS / 1000)}`, auth);
+    }
+    return Number(count) > RATE_LIMIT;
+  } catch {
+    return rateLimitedMem(ip); // KV 장애 시 폴백
+  }
+}
+
 const SYSTEM_PROMPT = `당신은 어르신의 다정한 손주 역할을 하는 AI입니다.
-첨부된 서류 사진을 분석해 아래 JSON으로만 답하세요.
+첨부된 사진을 분석해 아래 JSON으로만 답하세요.
+
+[무엇이든 다룹니다]
+- 고지서·서류만이 아니라, 사진 속에 글자나 안내가 있으면 무엇이든 쉽게 풀어 설명하세요.
+  (예: 약봉투·약 설명서, 제품 포장·성분표, 안내판·표지판, 메뉴판, 기계·가전 화면,
+   경고 문구, 손으로 쓴 쪽지 등)
+- 사진에서 읽을 수 있는 글자와 그림 정보를 최대한 활용해, 이게 무엇이고 어르신이
+  무엇을 알거나 하면 되는지 설명하세요. 서류가 아니면 '할일'은 비워도 됩니다.
 
 [말투 규칙]
 - 존댓말, 초등학교 5학년이 이해할 어휘만 사용
-- 한자어·행정용어는 반드시 일상어로 바꿈
+- 한자어·행정용어·전문용어·외국어는 반드시 일상어로 바꿈
   (예: "납부하다"→"돈을 내다", "과태료"→"벌금")
 
 ["음성안내"는 어떻게 쓸지]
@@ -73,7 +108,7 @@ const SYSTEM_PROMPT = `당신은 어르신의 다정한 손주 역할을 하는 
 
 [출력 형식]
 {
- "문서분류": "고지서|약관계약|문자안내|병원약|신청동의|복지혜택|사기의심|기타 중 하나",
+ "문서분류": "고지서|약관계약|문자안내|병원약|신청동의|복지혜택|사기의심|생활안내|기타 중 하나 (생활안내=서류가 아닌 안내판·제품·기계화면 등)",
  "문서종류": "",
  "한줄요약": "25자 이내",
  "쉬운설명": "3~4문장",
@@ -310,7 +345,7 @@ export default async function handler(req, res) {
   }
 
   const ip = (req.headers['x-forwarded-for'] || 'unknown').split(',')[0].trim();
-  if (rateLimited(ip)) {
+  if (await isRateLimited(ip)) {
     res.status(429).json({ error: '잠시 후 다시 시도해주세요' });
     return;
   }
