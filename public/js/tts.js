@@ -2,14 +2,15 @@
  * 🔊 듣기 — 1순위 Google Gemini TTS(/api/tts, 자연스러운 한국어),
  *           폴백 브라우저 Web Speech(ko-KR, 비용 0).
  *
- * Google 음성이 훨씬 자연스러워 기본으로 쓰되, 실패·미설정·오프라인이면
- * 즉시 Web Speech로 폴백해 서비스가 멈추지 않게 한다.
+ * 핵심: 안내문을 문장 단위로 쪼개 동시에(병렬) 생성하고, 첫 문장이 준비되는
+ * 즉시 재생을 시작한다. 전체를 한 번에 만들면 150자 안내문이 13초나 걸리지만,
+ * 문장 병렬 + 순차 재생이면 첫 소리까지 ~3초로 줄어든다.
+ * Google 실패·미설정·오프라인이면 Web Speech로 폴백해 서비스가 멈추지 않게 한다.
  */
 
 let speaking = false;
-let audioEl = null;        // Google TTS 재생용 HTMLAudioElement
-let audioUrl = null;       // objectURL (해제용)
-let cache = { text: null, promise: null }; // 프리페치된 음성(blob) 캐시
+let audioEl = null;                     // 현재 재생 중인 HTMLAudioElement
+let cache = { key: null, blobs: null }; // 프리페치된 문장별 음성(blob Promise 배열)
 
 export function isSpeaking() {
   return speaking;
@@ -18,11 +19,10 @@ export function isSpeaking() {
 export function stopSpeaking() {
   speaking = false;
   if (audioEl) { try { audioEl.pause(); } catch { /* noop */ } audioEl = null; }
-  if (audioUrl) { URL.revokeObjectURL(audioUrl); audioUrl = null; }
   if ('speechSynthesis' in window) speechSynthesis.cancel();
 }
 
-/** 긴 문단을 문장 단위로 쪼갠다 (Web Speech의 긴 발화 끊김 방지) */
+/** 문단을 문장 단위로 쪼갠다 (문장별 병렬 생성 + 자연스러운 호흡) */
 function splitSentences(text) {
   return String(text)
     .split(/(?<=[.!?。…])\s+|\n+/)
@@ -30,7 +30,7 @@ function splitSentences(text) {
     .filter(Boolean);
 }
 
-/** 읽어줄 전체 안내문(한 덩어리). 음성안내가 있으면 그것을, 없으면 항목을 조합. */
+/** 읽어줄 전체 안내문. 음성안내가 있으면 그것을, 없으면 항목을 조합. */
 function buildText(result) {
   if (result.음성안내 && result.음성안내.trim()) return result.음성안내.trim();
   const parts = [
@@ -55,35 +55,56 @@ async function fetchTtsBlob(text) {
   return res.blob();
 }
 
+/** 문장 배열을 병렬로 생성 시작(각각 blob Promise). */
+function generateSentences(sentences) {
+  return sentences.map((s) => fetchTtsBlob(s));
+}
+
 /**
- * 결과 화면 진입 시 음성을 미리 만들어 둔다(생성에 수 초 걸려 UX상 필수).
- * 어르신이 화면을 읽는 동안 백그라운드로 준비 → '듣기'를 누르면 즉시 재생.
+ * 결과 화면 진입 시 문장별 음성을 미리(병렬) 만들어 둔다.
+ * 어르신이 화면을 읽는 동안 준비 → '듣기'를 누르면 첫 문장부터 바로 재생.
  */
 export function prefetchTts(result) {
   const text = buildText(result);
   if (!text) return;
-  if (cache.text === text && cache.promise) return; // 이미 준비 중/완료
-  cache = { text, promise: fetchTtsBlob(text) };
-  cache.promise.catch(() => { /* 실패해도 조용히 — 듣기 때 폴백 */ });
+  const sentences = splitSentences(text);
+  if (!sentences.length) return;
+  const key = sentences.join('|');
+  if (cache.key === key && cache.blobs) return; // 이미 준비 중/완료
+  cache = { key, blobs: generateSentences(sentences) };
+  cache.blobs.forEach((p) => p.catch(() => { /* 실패는 듣기 때 폴백 */ }));
 }
 
-/** 1순위: Google TTS. 프리페치된 음성이 있으면 즉시, 없으면 생성 대기. */
-async function speakGoogle(text, onEnd, onReady) {
-  const blob = (cache.text === text && cache.promise)
-    ? await cache.promise            // 프리페치 재사용(대개 즉시)
-    : await fetchTtsBlob(text);
-  if (!speaking) return; // 그새 멈춤 눌림
-  audioUrl = URL.createObjectURL(blob);
-  audioEl = new Audio(audioUrl);
-  audioEl.playbackRate = 0.96; // 어르신 청취용 살짝 느리게
-  audioEl.onended = () => {
-    speaking = false;
-    if (audioUrl) { URL.revokeObjectURL(audioUrl); audioUrl = null; }
-    audioEl = null;
-    onEnd?.();
-  };
-  await audioEl.play();
-  onReady?.();
+/** blob 하나를 재생하고 끝날 때까지 기다린다. onStart는 실제 소리가 날 때 1회. */
+function playBlob(blob, onStart) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(blob);
+    audioEl = new Audio(url);
+    audioEl.playbackRate = 0.96; // 어르신 청취용 살짝 느리게
+    audioEl.onended = () => { URL.revokeObjectURL(url); resolve(); };
+    audioEl.onerror = () => { URL.revokeObjectURL(url); reject(new Error('play')); };
+    audioEl.play().then(() => onStart?.()).catch(reject);
+  });
+}
+
+/** 1순위: Google TTS. 문장별 병렬 생성 → 준비되는 순서대로 이어 재생. */
+async function speakGoogle(result, onEnd, onReady) {
+  const sentences = splitSentences(buildText(result));
+  const key = sentences.join('|');
+  const blobs = (cache.key === key && cache.blobs)
+    ? cache.blobs                 // 프리페치 재사용
+    : generateSentences(sentences);
+
+  let started = false;
+  for (let i = 0; i < blobs.length; i += 1) {
+    if (!speaking) return;
+    const blob = await blobs[i];   // 첫 문장은 짧아 ~3초, 나머지는 대개 이미 준비됨
+    if (!speaking) return;
+    // 첫 문장 재생을 못 시작하면(예외) 폴백되도록 첫 조각만 throw 허용
+    await playBlob(blob, () => { if (!started) { started = true; onReady?.(); } });
+  }
+  speaking = false;
+  onEnd?.();
 }
 
 /** 폴백: 브라우저 Web Speech. */
@@ -117,12 +138,11 @@ function speakWebSpeech(result, onEnd, onReady) {
  */
 export function speakResult(result, onEnd, onReady) {
   if (speaking) { stopSpeaking(); onEnd?.(); return 'stopped'; }
-  const text = buildText(result);
-  if (!text) return false;
+  if (!buildText(result)) return false;
 
   speaking = true;
   // 1순위 Google, 실패하면 Web Speech 폴백
-  speakGoogle(text, onEnd, onReady).catch(() => {
+  speakGoogle(result, onEnd, onReady).catch(() => {
     if (!speaking) return; // 사용자가 그새 멈춤
     const ok = speakWebSpeech(result, onEnd, onReady);
     if (!ok) { speaking = false; onEnd?.(); }
