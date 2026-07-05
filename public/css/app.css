@@ -101,6 +101,7 @@ button.tap-flash { transform: scale(0.94); filter: brightness(0.93); }
   padding: 0.8rem 1rem;
   min-height: 4.5rem;
 }
+.brand-mascot { width: 3.25rem; height: 3.25rem; flex-shrink: 0; object-fit: contain; }
 .brand { display: flex; flex-direction: column; flex: 1; }
 .brand-name { font-size: 1.6rem; font-weight: 900; color: var(--primary); line-height: 1.15; }
 .brand-sub { font-size: 0.95rem; font-weight: 700; color: var(--gray); }

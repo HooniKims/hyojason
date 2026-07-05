@@ -30,7 +30,6 @@ export const ICONS = {
   phone: `<path ${P} d="M6.5 3.5h3l1.8 4.5-2.3 1.4a11 11 0 0 0 5.1 5.1l1.4-2.3 4.5 1.8v3a2 2 0 0 1-2.2 2A15.5 15.5 0 0 1 4.5 5.7 2 2 0 0 1 6.5 3.5z"/>`,
   lock: `<rect ${P} x="5" y="11" width="14" height="9" rx="2"/><path ${P} d="M8 11V8a4 4 0 0 1 8 0v3"/><circle cx="12" cy="15.5" r="1.4" fill="currentColor"/>`,
   chat: `<path ${P} d="M4 5.5h16a1.5 1.5 0 0 1 1.5 1.5v8a1.5 1.5 0 0 1-1.5 1.5h-9l-4.5 4v-4H4A1.5 1.5 0 0 1 2.5 15V7A1.5 1.5 0 0 1 4 5.5z"/><path ${P} d="M7.5 9.5h9M7.5 12.5h6"/>`,
-  hand: `<path ${P} d="M12 20.5S4.5 16 4.5 10.3A3.6 3.6 0 0 1 12 7.5a3.6 3.6 0 0 1 7.5 2.8C19.5 16 12 20.5 12 20.5z"/>`,
   robot: `<rect ${P} x="4.5" y="8" width="15" height="10.5" rx="2.5"/><circle cx="9.5" cy="13.2" r="1.4" fill="currentColor"/><circle cx="14.5" cy="13.2" r="1.4" fill="currentColor"/><path ${P} d="M12 8V5"/><circle ${P} cx="12" cy="4" r="1.3"/><path ${P} d="M2.8 12v3M21.2 12v3"/>`,
   checkbig: `<circle ${P} cx="12" cy="12" r="9"/><path ${P} d="M8 12.3l2.7 2.7L16.2 9"/>`,
   // 신호등 (배너용, 흰색 currentColor로 색 배경 위에)
