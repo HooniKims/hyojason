@@ -12,14 +12,14 @@
 
 - **범용 서류 해석**: 고지서·약관·계약서·문자·병원 안내·신청서 등 글자가 어려운 것이면 무엇이든. 사진을 올리면 AI가 유형을 자동 분류.
 - **5층 사기 지킴이**: 한 층이 놓쳐도 다음 층이 잡는 격상형 다층 검증(아래 참조).
-- **어르신 UX**: 초대형 버튼, 글자 3단 조절, 음성 안내(TTS), 신호등(안전·주의·위험), 결과 카드 저장·가족 공유. 회원가입 없음, 홈→결과 두 번 터치.
+- **어르신 UX**: 초대형 버튼, 글자 3단 조절, 자연스러운 음성 안내(Google Gemini TTS), 신호등(안전·주의·위험), 결과 카드 저장·가족 공유. 종이 서류는 촬영, 문자·카톡은 화면 캡처로 올림. 회원가입 없음, 홈→결과 두 번 터치.
 - **개인정보 비수집**: 서버 무저장, 사진 즉시 폐기, 기록은 내 휴대폰(IndexedDB)에만.
 
 ## 심사용 빠른 확인 (API 키 없이 전체 체험)
 
 홈의 **"샘플 서류로 체험하기"** 버튼으로 실물 서류 없이 6종(건강보험 고지서·기초연금 안내·가짜 독촉장·휴대폰 약관·택배 문자·복약 안내)을 그대로 체험할 수 있습니다. 사기 판별·쉬운 설명·할 일·음성 안내가 모두 동작합니다.
 
-- 배포 URL: (배포 후 기입)
+- 배포 URL: https://hyojason.vercel.app
 - 로컬 체험: `node scripts/dev-server.mjs` → http://localhost:8787 (실제 서버리스 핸들러를 그대로 구동)
 
 ## 사기 지킴이 5층 (격상형: 더 위험한 판정을 채택)
@@ -45,11 +45,14 @@ public/                정적 프론트엔드 (프레임워크 없음, ES Module
   js/samples.js        샘플 서류 6종 (심사용 체험, API 불필요)
   js/db.js             IndexedDB — 분석 텍스트만 기기 내 저장 (사진 미저장)
   js/card.js           Canvas 결과 카드 생성 (내용 맞춤 세로형 자동 높이)
-  js/tts.js            Web Speech API TTS (ko-KR) — 자연스러운 음성 안내
+  js/tts.js            음성 안내 — Google Gemini TTS 1순위(문장 병렬 생성), Web Speech 폴백
   js/icons.js          인라인 SVG 아이콘 세트 (외부 폰트·CDN 의존 0)
+  js/vendor/           자체 호스팅 라이브러리 (lottie-web 경량 빌드 — 로딩 애니메이션)
+  anim/reading.json    로딩 Lottie (서류 읽는 손주)
 api/
   analyze.js           비전 AI 호출 + QR 디코딩 + 2층 블랙리스트 대조 + 사실확인 + 게이트,
                        JSON 스키마 검증·재시도, PII 마스킹, 공유 rate limit
+  tts.js               Google Gemini TTS 호출 → PCM을 WAV로 변환해 반환 (rate limit·키 보호)
   refresh-blacklist.js Vercel Cron(일 1회) — 공공데이터 KISA 피싱 URL → KV 캐시
   lib/phishing.js      URL 정규화·색인·매칭 (2층 공용)
   lib/factcheck.js     사실확인 — 사업자등록·부동산 시세·DART
@@ -73,7 +76,7 @@ API 키가 없어도 **샘플 체험**은 완전히 동작합니다.
 ## 환경변수 (`.env.example` 참고)
 
 - `OPENAI_API_KEY` — 주 모델 gpt-5.4-nano (필수)
-- `GEMINI_API_KEY` — 넣으면 Gemini 2.5 Flash가 폴백으로 자동 이중화 (선택)
+- `GEMINI_API_KEY` — 음성 안내(Gemini 3.1 Flash TTS)에 사용 + 비전 분석 폴백(Gemini 2.5 Flash) 자동 이중화
 - `DATA_GO_KR_API_KEY` — 공공데이터포털 공용 키 (KISA 피싱·사업자등록·실거래가)
 - `DART_API_KEY` — 금융감독원 DART
 - `KV_REST_API_URL` / `KV_REST_API_TOKEN` — Upstash(2층 블랙리스트 캐시), 없으면 2층 생략
@@ -90,8 +93,10 @@ API 키가 없어도 **샘플 체험**은 완전히 동작합니다.
 ## 출처 표기 (라이선스 준수)
 
 - 사기 판별 수칙: 한국인터넷진흥원(KISA) 보호나라
-- 공공데이터: 공공데이터포털(data.go.kr) — KISA 피싱 URL, 국세청 사업자등록, 국토교통부 실거래가 / 금융감독원 DART
-- 오픈소스: 아이콘 Phosphor(MIT)·Lucide(ISC) 참고, QR 디코딩 jsQR 등
-- UI 디자인 초안: Google Stitch
+- 공공데이터: 공공데이터포털(data.go.kr) 오픈API 활용신청 — KISA 피싱 URL, 국세청 사업자등록, 국토교통부 실거래가 / 금융감독원 DART
+- AI 모델: OpenAI gpt-5.4-nano(비전 분석), Google Gemini(비전 폴백·3.1 Flash TTS 음성 안내)
+- 오픈소스: QR 디코딩 jsQR·jpeg-js·pngjs, 로딩 애니메이션 lottie-web(MIT), 아이콘 Phosphor(MIT)·Lucide(ISC) 참고
+- UI 디자인 초안: Google Stitch / 마스코트 캐릭터: 생성형 AI로 자체 제작
 - 인용 통계: 과기정통부·NIA 「2024 디지털정보격차 실태조사」(국가승인통계), KISA 스미싱 피해 현황
 - 샘플 서류 6종은 가상의 인물·기관·금액으로 만든 창작물입니다
+- 크롤링·스크래핑 없음: 외부 웹사이트를 긁지 않으며, QR·URL도 디코딩만 하고 접속하지 않습니다
