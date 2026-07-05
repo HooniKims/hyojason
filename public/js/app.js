@@ -6,7 +6,7 @@
 import { runRules, mergeRisk } from './rules.js';
 import { SAMPLES, sampleImageURL } from './samples.js';
 import { addRecord, listRecords, deleteRecord, clearRecords } from './db.js';
-import { speakResult, stopSpeaking, isSpeaking } from './tts.js';
+import { speakResult, stopSpeaking, isSpeaking, prefetchTts } from './tts.js';
 import { renderCard } from './card.js';
 import { hydrateIcons, svgIcon } from './icons.js';
 
@@ -354,6 +354,9 @@ function renderResult(result) {
   // 결과 카드 PNG를 미리 생성해 캐시 (iOS Web Share는 탭 제스처 중 await가 있으면
   // 사용자 활성화가 소멸돼 실패하므로, 저장/공유 시점엔 이미 준비돼 있어야 함)
   prepareCard(result);
+  // 음성(Google TTS)도 백그라운드로 미리 생성 — 생성에 수 초 걸리므로,
+  // 어르신이 화면을 읽는 동안 준비해 두면 '듣기'를 누를 때 바로 재생된다.
+  prefetchTts(result);
 }
 
 /** 결과 카드 File을 미리 만들어 state.cardFile에 캐시 */
@@ -371,10 +374,15 @@ function prepareCard(result) {
 
 /* ---------- 듣기 ---------- */
 
-function resetSpeakButton() {
-  $('#btn-speak .action-icon').innerHTML = svgIcon('volume');
-  $('#btn-speak .action-label').textContent = '듣기';
+function setSpeakButton(state2) {
+  const icon = $('#btn-speak .action-icon');
+  const label = $('#btn-speak .action-label');
+  if (state2 === 'loading') { icon.innerHTML = svgIcon('volume'); label.textContent = '준비 중…'; }
+  else if (state2 === 'playing') { icon.innerHTML = svgIcon('stop'); label.textContent = '멈추기'; }
+  else { icon.innerHTML = svgIcon('volume'); label.textContent = '듣기'; }
 }
+
+function resetSpeakButton() { setSpeakButton('idle'); }
 
 function toggleSpeak() {
   if (!state.result) return;
@@ -383,13 +391,17 @@ function toggleSpeak() {
     resetSpeakButton();
     return;
   }
-  const ok = speakResult(state.result, resetSpeakButton);
+  // Google TTS는 네트워크 지연이 있어 "준비 중" → 소리 나기 시작하면 "멈추기"로 전환
+  const ok = speakResult(
+    state.result,
+    resetSpeakButton,               // onEnd: 재생 끝나면 원복
+    () => setSpeakButton('playing'), // onReady: 실제 소리 시작
+  );
   if (!ok) {
     toast('이 휴대폰에서는 소리 읽기가 안 돼요.');
     return;
   }
-  $('#btn-speak .action-icon').innerHTML = svgIcon('stop');
-  $('#btn-speak .action-label').textContent = '멈추기';
+  setSpeakButton('loading');
 }
 
 /* ---------- 저장/공유 ---------- */
