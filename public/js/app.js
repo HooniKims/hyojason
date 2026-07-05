@@ -97,6 +97,34 @@ function cycleFont() {
 function setLoading(on, msg = '서류를 읽고 있어요…') {
   $('#loading-text').textContent = msg;
   $('#loading').classList.toggle('active', on);
+  if (on) ensureLoadingAnim();
+}
+
+// 로딩 애니메이션(Lottie)을 처음 필요할 때만 지연 로드한다.
+// 첫 화면 대역폭을 아끼고, 실패·저사양·모션 최소화 설정에선 CSS 스피너 폴백을 유지.
+let lottieAnim = null;
+let lottieLoading = false;
+function ensureLoadingAnim() {
+  if (lottieAnim || lottieLoading) return;
+  // 모션 최소화를 선호하면 Lottie를 켜지 않고 정적 폴백(느린 스피너) 유지
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  lottieLoading = true;
+  import('./vendor/lottie_light.min.js')
+    .then(() => fetch('/anim/reading.json').then((r) => r.json()).then((data) => {
+      const lottie = window.lottie;
+      if (!lottie) throw new Error('no lottie');
+      const box = $('#loading-anim');
+      lottieAnim = lottie.loadAnimation({
+        container: box,
+        renderer: 'svg',
+        loop: true,
+        autoplay: true,
+        animationData: data,
+      });
+      box.classList.add('lottie-ready'); // CSS 스피너 폴백 숨김
+    }))
+    .catch(() => { /* 실패 시 CSS 스피너 폴백 그대로 */ })
+    .finally(() => { lottieLoading = false; });
 }
 
 function toast(msg) {
