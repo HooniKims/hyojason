@@ -137,13 +137,35 @@ function toast(msg) {
 
 /* ---------- 사진 → 분석 ---------- */
 
+// 파일 → 그릴 수 있는 이미지 소스. createImageBitmap이 없거나 실패하면
+// (iOS Safari 15 미만·일부 구형 안드로이드 웹뷰) HTMLImageElement로 폴백한다.
+async function decodeImage(file) {
+  if (typeof createImageBitmap === 'function') {
+    try { return await createImageBitmap(file); } catch { /* 폴백으로 진행 */ }
+  }
+  const url = URL.createObjectURL(file);
+  try {
+    return await new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = () => reject(new Error('image decode failed'));
+      img.src = url;
+    });
+  } finally {
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+}
+
 async function compressImage(file, maxSize = 1600, quality = 0.82) {
-  const bitmap = await createImageBitmap(file);
-  const scale = Math.min(1, maxSize / Math.max(bitmap.width, bitmap.height));
+  const src = await decodeImage(file);
+  const w = src.naturalWidth || src.width;
+  const h = src.naturalHeight || src.height;
+  const scale = Math.min(1, maxSize / Math.max(w, h));
   const canvas = document.createElement('canvas');
-  canvas.width = Math.round(bitmap.width * scale);
-  canvas.height = Math.round(bitmap.height * scale);
-  canvas.getContext('2d').drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  canvas.width = Math.round(w * scale);
+  canvas.height = Math.round(h * scale);
+  canvas.getContext('2d').drawImage(src, 0, 0, canvas.width, canvas.height);
+  if (typeof src.close === 'function') src.close(); // ImageBitmap 메모리 해제
   const blob = await new Promise((r) => canvas.toBlob(r, 'image/jpeg', quality));
   const base64 = await new Promise((resolve) => {
     const reader = new FileReader();
@@ -520,13 +542,19 @@ function init() {
   renderSamplePicker();
   renderHistory();
 
-  // 홈
-  $('#btn-camera').addEventListener('click', () => $('#file-input').click());
-  $('#file-input').addEventListener('change', (e) => {
+  // 홈: 시작하기 → "사진 찍기 / 사진첩에서 고르기" 선택
+  const pickFile = (e) => {
     const file = e.target.files?.[0];
     e.target.value = '';
+    $('#source-dialog').classList.remove('active');
     if (file) analyzePhoto(file);
-  });
+  };
+  $('#btn-camera').addEventListener('click', () => $('#source-dialog').classList.add('active'));
+  $('#btn-src-camera').addEventListener('click', () => $('#file-camera').click());
+  $('#btn-src-gallery').addEventListener('click', () => $('#file-gallery').click());
+  $('#btn-src-close').addEventListener('click', () => $('#source-dialog').classList.remove('active'));
+  $('#file-camera').addEventListener('change', pickFile);
+  $('#file-gallery').addEventListener('change', pickFile);
   $('#btn-sample').addEventListener('click', () => $('#sample-dialog').classList.add('active'));
   $('#btn-sample-close').addEventListener('click', () => $('#sample-dialog').classList.remove('active'));
   $('#btn-clear-history').addEventListener('click', async () => {
@@ -557,10 +585,10 @@ function init() {
   $('#btn-history-back').addEventListener('click', goBack);
   $('#btn-help-back').addEventListener('click', goBack);
 
-  // 다시 찍기 안내
+  // 다시 찍기 안내 (흐린 사진 → 카메라로 다시 촬영)
   $('#btn-retake').addEventListener('click', () => {
     $('#retake-dialog').classList.remove('active');
-    $('#file-input').click();
+    $('#file-camera').click();
   });
   $('#btn-retake-close').addEventListener('click', () => $('#retake-dialog').classList.remove('active'));
 

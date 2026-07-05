@@ -76,6 +76,13 @@ button.tap-flash { transform: scale(0.94); filter: brightness(0.93); }
 .ic-inline .ic { width: 1.25em; height: 1.25em; vertical-align: -0.2em; }
 .icon-btn .ic { width: 1.9rem; height: 1.9rem; }
 .big-cta .cta-emoji .ic { width: 3.4rem; height: 3.4rem; }
+/* 시작하기 카메라 아이콘: 이따금 살짝 통통 (찰칵 느낌, CSS로 런타임 0) */
+.big-cta .cta-emoji { display: inline-flex; animation: cta-cam 3.2s ease-in-out infinite; }
+@keyframes cta-cam {
+  0%, 82%, 100% { transform: scale(1) rotate(0deg); }
+  88%           { transform: scale(1.12) rotate(-4deg); }
+  94%           { transform: scale(1.12) rotate(4deg); }
+}
 .action-icon .ic { width: 1.9rem; height: 1.9rem; }
 .brand-ic .ic { width: 1.5rem; height: 1.5rem; vertical-align: -0.22em; }
 .step-emoji .ic { width: 3rem; height: 3rem; }
@@ -429,6 +436,12 @@ main { max-width: 640px; margin: 0 auto; padding: 1.2rem 1.2rem 2rem; }
   max-height: 88vh; overflow-y: auto;
 }
 .sheet h2 { font-size: 1.4rem; font-weight: 900; margin-bottom: 1rem; }
+.src-hint { font-size: 1rem; font-weight: 700; color: var(--gray); margin: 0.35rem 0 1.1rem 0.3rem; }
+/* 선택 다이얼로그가 열릴 때 두 아이콘이 부드럽게 살아나는 미세 움직임 (CSS, 런타임 0) */
+#source-dialog.active #btn-src-camera .ic { animation: src-pop 0.5s ease-out both, cta-cam 3.2s 0.5s ease-in-out infinite; }
+#source-dialog.active #btn-src-gallery .ic { animation: src-pop 0.5s 0.08s ease-out both, src-sway 3.6s 0.6s ease-in-out infinite; }
+@keyframes src-pop { 0% { transform: scale(0.4); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+@keyframes src-sway { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
 
 .sample-item {
   width: 100%; min-height: 5rem;
@@ -485,7 +498,10 @@ main { max-width: 640px; margin: 0 auto; padding: 1.2rem 1.2rem 2rem; }
 @media (prefers-reduced-motion: reduce) {
   .spinner { animation-duration: 2.5s; }
   button:active { transform: none; }
-  .brand-mascot { animation: none; }
+  .brand-mascot,
+  .big-cta .cta-emoji,
+  #source-dialog.active #btn-src-camera .ic,
+  #source-dialog.active #btn-src-gallery .ic { animation: none; }
 }
 
 /* ══════════════════════════════════════════════════════
