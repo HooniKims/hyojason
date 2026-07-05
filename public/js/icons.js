@@ -33,7 +33,6 @@ export const ICONS = {
   hand: `<path ${P} d="M12 20.5S4.5 16 4.5 10.3A3.6 3.6 0 0 1 12 7.5a3.6 3.6 0 0 1 7.5 2.8C19.5 16 12 20.5 12 20.5z"/>`,
   robot: `<rect ${P} x="4.5" y="8" width="15" height="10.5" rx="2.5"/><circle cx="9.5" cy="13.2" r="1.4" fill="currentColor"/><circle cx="14.5" cy="13.2" r="1.4" fill="currentColor"/><path ${P} d="M12 8V5"/><circle ${P} cx="12" cy="4" r="1.3"/><path ${P} d="M2.8 12v3M21.2 12v3"/>`,
   checkbig: `<circle ${P} cx="12" cy="12" r="9"/><path ${P} d="M8 12.3l2.7 2.7L16.2 9"/>`,
-  check: `<path ${P} d="M5 12.5l4.5 4.5L19 7"/>`,
   // 신호등 (배너용, 흰색 currentColor로 색 배경 위에)
   safe: `<circle ${P} cx="12" cy="12" r="9"/><path ${P} d="M8 12.3l2.7 2.7L16.2 9"/>`,
   caution: `<path ${P} d="M12 3.5l9.2 16H2.8z"/><path ${P} d="M12 9.5v4.5"/><circle cx="12" cy="17.3" r="1.15" fill="currentColor"/>`,

@@ -28,9 +28,6 @@ const ORG_DIRECTORY = [
   { match: /(도로교통공단)/, name: '도로교통공단', tel: '1577-1120' },
 ];
 
-// 통합 신고·상담 (사기 의심 시 공통 안내)
-export const REPORT_LINES = { 경찰신고: '112', 금감원: '1332', 스미싱: '118' };
-
 /** 발신기관/문서종류에서 공식 기관을 찾아 역확인 번호를 돌려준다 */
 export function findOfficialContact(...texts) {
   const hay = texts.filter(Boolean).join(' ');

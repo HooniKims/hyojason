@@ -75,10 +75,6 @@ function resolveLawd(region) {
   }
   return null;
 }
-function recentYmd() {
-  // 서버 시간에 의존하지 않도록 직전 처리월을 넉넉히: 최근 6개월 중 데이터 있는 달을 순회
-  return null;
-}
 async function fetchTradeMedian(lawdCd, ymd) {
   const key = process.env.DATA_GO_KR_API_KEY;
   const url = `${REAL_ESTATE.aptTrade}?serviceKey=${encodeURIComponent(key)}&LAWD_CD=${lawdCd}&DEAL_YMD=${ymd}&pageNo=1&numOfRows=100`;

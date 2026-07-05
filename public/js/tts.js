@@ -72,8 +72,3 @@ export function speakResult(result, onEnd) {
   });
   return true;
 }
-
-// 일부 브라우저는 voices를 늦게 로드함
-if ('speechSynthesis' in window) {
-  speechSynthesis.onvoiceschanged = () => {};
-}

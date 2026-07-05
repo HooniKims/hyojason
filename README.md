@@ -44,7 +44,7 @@ public/                정적 프론트엔드 (프레임워크 없음, ES Module
   js/rules.js          1층 사기 지킴이 — 클라이언트 규칙 엔진 (KISA 수칙 기반)
   js/samples.js        샘플 서류 6종 (심사용 체험, API 불필요)
   js/db.js             IndexedDB — 분석 텍스트만 기기 내 저장 (사진 미저장)
-  js/card.js           Canvas 결과 카드(9:16) 생성
+  js/card.js           Canvas 결과 카드 생성 (내용 맞춤 세로형 자동 높이)
   js/tts.js            Web Speech API TTS (ko-KR) — 자연스러운 음성 안내
   js/icons.js          인라인 SVG 아이콘 세트 (외부 폰트·CDN 의존 0)
 api/
