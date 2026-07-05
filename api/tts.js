@@ -93,8 +93,10 @@ export default async function handler(req, res) {
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
+        // 텍스트만 그대로 넣는다. 지시문을 접두어로 붙이면 TTS가 그 지시문까지
+        // 소리 내어 읽어 매우 어색해진다(형식상 별도 스타일 프롬프트 불가한 케이스).
         body: JSON.stringify({
-          contents: [{ parts: [{ text: `다음 내용을 어르신께 다정하고 또박또박 천천히 읽어 주세요: ${clean}` }] }],
+          contents: [{ parts: [{ text: clean }] }],
           generationConfig: {
             responseModalities: ['AUDIO'],
             speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: VOICE } } },
