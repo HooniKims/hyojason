@@ -36,8 +36,35 @@ button {
   background: none;
   color: inherit;
   touch-action: manipulation;
+  transition: transform 0.08s ease, box-shadow 0.12s ease, background-color 0.12s ease, filter 0.12s ease;
 }
 button:active { transform: scale(0.98); }
+
+/* JS 눌림 플래시 — 클릭/터치 즉시 220ms 동안 확실히 보이는 눌림 표시.
+   :active는 손을 빨리 떼면 놓치기 쉽고, 클릭 즉시 내부를 바꾸는 버튼(듣기·글자크기)에선
+   더 안 보여서, 버튼 요소 자체에 클래스로 표시한다. */
+button.tap-flash { transform: scale(0.94); filter: brightness(0.93); }
+
+/* 마우스 hover 피드백 (마우스 있는 기기에서만 — 터치엔 hover 없음) */
+@media (hover: hover) {
+  /* 파란 대형/알약 버튼: 살짝 밝아지고 떠오름 */
+  .big-cta:hover { filter: brightness(1.06); transform: translateY(-2px); }
+  .full-btn:hover { filter: brightness(1.06); transform: translateY(-2px); }
+  /* 외곽선 버튼: 연한 파란 배경 */
+  .outline-btn:hover { background: var(--primary-soft); }
+  /* 하단 액션바·탭·상단 아이콘: 연한 회색 배경 */
+  .icon-btn:hover, .nav-link:hover { background: var(--bg-soft); }
+  /* 액션바·탭: 마우스 올리면 파란 배경+파란 글자+안쪽 파란 테두리로 또렷하게 */
+  .action-btn:hover, .tab-btn:hover { background: var(--primary-soft); color: var(--primary); box-shadow: inset 0 0 0 2px var(--primary); }
+  /* 리스트·카드형 버튼: 테두리 강조 + 살짝 떠오름 */
+  .sample-item:hover, .history-open:hover { border-color: var(--primary); transform: translateY(-1px); }
+  .history-del:hover { background: #FDECEA; border-color: var(--danger); }
+  /* 전화·링크 버튼 */
+  .tel-btn:hover, .fact-tel:hover { filter: brightness(1.08); }
+  .footer-links a:hover { color: var(--primary); }
+  /* 샘플/기록 화살표 딸린 카드 눌림 커서 명확화 */
+  .clear-all-btn:hover { border-color: var(--danger); color: var(--danger); }
+}
 
 /* 키보드·보조기기 포커스 표시 (WCAG 2.4.7) — 마우스 클릭엔 안 나타나고 키보드 이동 시만 */
 :focus-visible { outline: 3px solid var(--primary); outline-offset: 2px; border-radius: 6px; }
@@ -341,8 +368,12 @@ main { max-width: 640px; margin: 0 auto; padding: 1.2rem 1.2rem 2rem; }
   flex: 1; min-height: 4.4rem;
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.15rem;
   border-radius: 1rem; margin: 0 0.15rem;
+  color: var(--ink);
 }
-.action-btn:active { background: var(--bg-soft); }
+/* 터치(모바일)·클릭 눌림: 파란 배경+파란 글자로 또렷하게 */
+.action-btn:active { background: var(--primary-soft); color: var(--primary); transform: scale(0.94); }
+/* 눌림 플래시(듣기·글자크기 포함 전 액션버튼): 파란 배경+흰 글자·아이콘으로 확실히 */
+.action-btn.tap-flash { background-color: var(--primary); color: #fff; transform: scale(0.92); filter: none; }
 .action-icon { font-size: 1.6rem; }
 .action-label { font-size: 0.98rem; font-weight: 900; }
 .view-with-bar main { padding-bottom: 8.5rem; }
@@ -522,3 +553,13 @@ main { max-width: 640px; margin: 0 auto; padding: 1.2rem 1.2rem 2rem; }
 }
 .clear-all-btn:active { background: #FDECEA; border-color: var(--danger); color: var(--danger); }
 .clear-all-btn .ic-inline .ic { width: 1.3rem; height: 1.3rem; }
+
+/* ---------- 터치·클릭 눌림 피드백 (모바일·PC 공통) ----------
+   hover가 없는 터치 기기에서도 "눌렀다"가 확실히 보이도록 :active 강화.
+   기본 button:active(scale 0.98)에 더해 주요 버튼은 색/깊이도 변화. */
+.tel-btn:active, .fact-tel:active { filter: brightness(0.92); transform: scale(0.97); }
+.big-cta:active, .full-btn:active { filter: brightness(0.94); transform: scale(0.98); }
+.outline-btn:active { background: var(--primary-soft); transform: scale(0.98); }
+.sample-item:active, .history-open:active { background: var(--primary-soft); border-color: var(--primary); transform: scale(0.99); }
+.tab-btn:active { background: var(--primary-soft); color: var(--primary); transform: scale(0.96); }
+.icon-btn:active { background: var(--bg-soft); transform: scale(0.92); }

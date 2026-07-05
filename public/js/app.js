@@ -536,6 +536,16 @@ function init() {
   });
   $('#btn-retake-close').addEventListener('click', () => $('#retake-dialog').classList.remove('active'));
 
+  // 눌림 피드백: 어떤 버튼이든 누르는(터치·클릭) 즉시 플래시 클래스를 붙여
+  // 최소 200ms 보이게 한다. 듣기·글자크기처럼 클릭 직후 내부(아이콘·라벨)를
+  // 교체하는 버튼도 이 방식은 버튼 요소 자체에 표시하므로 리렌더에 씹히지 않는다.
+  document.addEventListener('pointerdown', (e) => {
+    const btn = e.target.closest('button, .tel-btn, .fact-tel, a.footer-links, .nav-link');
+    if (!btn) return;
+    btn.classList.add('tap-flash');
+    setTimeout(() => btn.classList.remove('tap-flash'), 220);
+  }, { passive: true });
+
   show('home');
 }
 
