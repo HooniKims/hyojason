@@ -77,15 +77,26 @@ function pcmToWav(pcm, sampleRate) {
   return Buffer.concat([header, pcm]);
 }
 
-/** 1순위: ElevenLabs. 지정 Voice ID로 mp3를 합성해 {buffer, contentType} 반환. */
-async function synthElevenLabs(text) {
+/**
+ * 1순위: ElevenLabs. 지정 Voice ID로 mp3를 합성해 {buffer, contentType} 반환.
+ * prev/next(앞뒤 문장)를 previous_text/next_text로 넘겨(request stitching), 문장을
+ * 나눠 생성해도 톤·억양이 이어지게 한다. voice_settings도 고정해 문장 간 변동을 줄인다.
+ */
+async function synthElevenLabs(text, prev, next) {
   const voice = EL_VOICE || EL_DEFAULT_VOICE;
+  const body = {
+    text,
+    model_id: EL_MODEL,
+    voice_settings: { stability: 0.55, similarity_boost: 0.85, use_speaker_boost: true },
+  };
+  if (prev) body.previous_text = String(prev).slice(0, 500);
+  if (next) body.next_text = String(next).slice(0, 500);
   const r = await fetch(
     `https://api.elevenlabs.io/v1/text-to-speech/${voice}?output_format=mp3_44100_128`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'xi-api-key': EL_KEY },
-      body: JSON.stringify({ text, model_id: EL_MODEL }),
+      body: JSON.stringify(body),
     },
   );
   if (!r.ok) throw new Error(`elevenlabs tts http ${r.status}`);
@@ -138,7 +149,7 @@ export default async function handler(req, res) {
   if (await isRateLimited(ip)) { res.status(429).json({ error: '잠시 후 다시 시도해주세요' }); return; }
 
   try {
-    const { text } = req.body || {};
+    const { text, prev, next } = req.body || {};
     if (!text || typeof text !== 'string' || !text.trim()) {
       res.status(400).json({ error: '읽을 내용이 없습니다' });
       return;
@@ -148,7 +159,7 @@ export default async function handler(req, res) {
     // 1순위 ElevenLabs → 실패 시 2순위 Gemini → 둘 다 실패면 502(클라이언트가 Web Speech 폴백)
     let audio = null;
     if (EL_KEY) {
-      try { audio = await synthElevenLabs(clean); } catch { audio = null; }
+      try { audio = await synthElevenLabs(clean, prev, next); } catch { audio = null; }
     }
     if (!audio && process.env.GEMINI_API_KEY) {
       audio = await synthGemini(clean);

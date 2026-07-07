@@ -45,19 +45,23 @@ function buildText(result) {
   return parts.join(' ');
 }
 
-async function fetchTtsBlob(text) {
+async function fetchTtsBlob(text, prev, next) {
   const res = await fetch('/api/tts', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text }),
+    // prev/next(앞뒤 문장)를 함께 넘겨 ElevenLabs가 문맥을 이어(stitching) 생성한다.
+    body: JSON.stringify({ text, prev, next }),
   });
   if (!res.ok) throw new Error('tts api');
   return res.blob();
 }
 
-/** 문장 배열을 병렬로 생성 시작(각각 blob Promise). */
+/**
+ * 문장 배열을 병렬로 생성 시작(각각 blob Promise).
+ * 앞뒤 문장을 문맥으로 함께 넘겨, 문장이 바뀔 때 톤·억양이 튀지 않게 한다.
+ */
 function generateSentences(sentences) {
-  return sentences.map((s) => fetchTtsBlob(s));
+  return sentences.map((s, i) => fetchTtsBlob(s, sentences[i - 1], sentences[i + 1]));
 }
 
 /**
@@ -98,10 +102,20 @@ async function speakGoogle(result, onEnd, onReady) {
   let started = false;
   for (let i = 0; i < blobs.length; i += 1) {
     if (!speaking) return;
-    const blob = await blobs[i];   // 첫 문장은 짧아 ~3초, 나머지는 대개 이미 준비됨
+    let blob;
+    try {
+      blob = await blobs[i];       // 첫 문장은 짧아 ~3초, 나머지는 대개 이미 준비됨
+    } catch (err) {
+      if (!started) throw err;     // 첫 문장 실패 → 전체 Web Speech 폴백
+      continue;                    // 이미 재생 중이면 실패한 문장만 건너뜀(목소리 유지)
+    }
     if (!speaking) return;
-    // 첫 문장 재생을 못 시작하면(예외) 폴백되도록 첫 조각만 throw 허용
-    await playBlob(blob, () => { if (!started) { started = true; onReady?.(); } });
+    try {
+      // 첫 조각만 throw 허용(폴백 트리거). 이후엔 재생 중 다른 목소리로 바뀌지 않게 건너뜀.
+      await playBlob(blob, () => { if (!started) { started = true; onReady?.(); } });
+    } catch (err) {
+      if (!started) throw err;
+    }
   }
   speaking = false;
   onEnd?.();

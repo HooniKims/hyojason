@@ -44,16 +44,10 @@ const RISK_UI = {
 // 하단 탭바가 보이는 탭 화면
 const TAB_VIEWS = ['home', 'history', 'help'];
 
-// 방문 기록(네비 스택) — 뒤로가기 화살표가 실제 이전 페이지로 가도록
 let currentView = null;
-const navStack = [];
 
-function show(view, opts = {}) {
-  // 뒤로가기가 아니고 화면이 바뀌면 현재 화면을 스택에 쌓음
-  if (!opts.back && currentView && currentView !== view) {
-    navStack.push(currentView);
-    if (navStack.length > 20) navStack.shift();
-  }
+/** 화면을 그린다(순수 렌더). 히스토리 조작은 navigate()/popstate가 담당. */
+function show(view) {
   currentView = view;
 
   $$('.view').forEach((v) => v.classList.remove('active'));
@@ -73,10 +67,19 @@ function show(view, opts = {}) {
   $$('[data-view]').forEach((b) => b.classList.toggle('active', b.dataset.view === view));
 }
 
-/** 뒤로가기: 방문 기록의 이전 화면으로 (없으면 홈) */
+/**
+ * 앞으로 이동. 브라우저 히스토리에 항목을 쌓아, 휴대폰(및 브라우저) '뒤로가기'가
+ * 이전 사이트로 나가버리지 않고 앱 안의 직전 화면으로 돌아가게 한다.
+ */
+function navigate(view) {
+  if (view === currentView) { show(view); return; }
+  history.pushState({ view }, '');
+  show(view);
+}
+
+/** 뒤로가기(화면 안 화살표): 히스토리를 되감으면 popstate가 렌더를 처리. */
 function goBack() {
-  const prev = navStack.pop();
-  show(prev || 'home', { back: true });
+  history.back();
 }
 
 /* ---------- 글자 크기 3단 ---------- */
@@ -137,23 +140,42 @@ function toast(msg) {
 
 /* ---------- 사진 → 분석 ---------- */
 
-// 파일 → 그릴 수 있는 이미지 소스. createImageBitmap이 없거나 실패하면
-// (iOS Safari 15 미만·일부 구형 안드로이드 웹뷰) HTMLImageElement로 폴백한다.
-async function decodeImage(file) {
-  if (typeof createImageBitmap === 'function') {
-    try { return await createImageBitmap(file); } catch { /* 폴백으로 진행 */ }
-  }
+// Promise에 시한을 둔다. 갤럭시 등 초고화소(수천만~1억 화소) 사진에서
+// createImageBitmap이 영영 끝나지 않아 로딩 화면에 갇히는(=촬영 후 멈춤) 것을 막는다.
+function withTimeout(promise, ms) {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error('timeout')), ms);
+    promise.then(
+      (v) => { clearTimeout(t); resolve(v); },
+      (e) => { clearTimeout(t); reject(e); },
+    );
+  });
+}
+
+// <img> 요소로 디코딩 (createImageBitmap 미지원·실패·시한초과 시 폴백).
+async function decodeViaImage(file) {
   const url = URL.createObjectURL(file);
   try {
-    return await new Promise((resolve, reject) => {
+    return await withTimeout(new Promise((resolve, reject) => {
       const img = new Image();
       img.onload = () => resolve(img);
       img.onerror = () => reject(new Error('image decode failed'));
       img.src = url;
-    });
+    }), 15000);
   } finally {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
+}
+
+// 파일 → 그릴 수 있는 이미지 소스. 1순위 createImageBitmap(EXIF 회전 반영)이되
+// 초대형 사진에서 멈출 수 있어 시한을 두고, 실패·시한초과면 <img>로 폴백한다.
+async function decodeImage(file) {
+  if (typeof createImageBitmap === 'function') {
+    try {
+      return await withTimeout(createImageBitmap(file, { imageOrientation: 'from-image' }), 10000);
+    } catch { /* 폴백으로 진행 */ }
+  }
+  return decodeViaImage(file);
 }
 
 async function compressImage(file, maxSize = 1600, quality = 0.82) {
@@ -167,6 +189,7 @@ async function compressImage(file, maxSize = 1600, quality = 0.82) {
   canvas.getContext('2d').drawImage(src, 0, 0, canvas.width, canvas.height);
   if (typeof src.close === 'function') src.close(); // ImageBitmap 메모리 해제
   const blob = await new Promise((r) => canvas.toBlob(r, 'image/jpeg', quality));
+  if (!blob) throw new Error('canvas toBlob 실패'); // 초대형 캔버스에서 null 반환 시 멈춤 방지
   const base64 = await new Promise((resolve) => {
     const reader = new FileReader();
     reader.onload = () => resolve(String(reader.result).split(',')[1]);
@@ -209,7 +232,7 @@ async function analyzePhoto(file) {
     state.fromHistory = false;
     await addRecord(result);
     renderResult(result);
-    show('result');
+    navigate('result');
   } catch (err) {
     toast(err.message === 'rate'
       ? '너무 많이 사용했어요. 1시간 뒤에 다시 해주세요.'
@@ -261,7 +284,7 @@ async function runSample(sample) {
   state.fromHistory = false;
   await addRecord(result);
   renderResult(result);
-  show('result');
+  navigate('result');
 }
 
 /* ---------- 결과 렌더링 ---------- */
@@ -347,9 +370,10 @@ function renderResult(result) {
     dangerBox.style.display = 'none';
   }
 
-  // 원본 동봉 체크박스: 분석 직후(원본 보유 시)에만 노출
+  // 원본 동봉 체크박스: 분석 직후(원본 보유 시)에만 노출.
+  // 놓치기 쉬우므로 기본값을 '함께 보내기(체크됨)'로 두고, 원치 않으면 해제하게 한다.
   $('#share-original-row').style.display = state.originalFile ? '' : 'none';
-  $('#chk-share-original').checked = false;
+  $('#chk-share-original').checked = true;
 
   // 결과 카드 PNG를 미리 생성해 캐시 (iOS Web Share는 탭 제스처 중 await가 있으면
   // 사용자 활성화가 소멸돼 실패하므로, 저장/공유 시점엔 이미 준비돼 있어야 함)
@@ -534,7 +558,7 @@ async function renderHistory() {
       state.originalFile = null;
       state.fromHistory = true;
       renderResult(rec.result);
-      show('result');
+      navigate('result');
     });
     row.querySelector('.history-del').addEventListener('click', async () => {
       // 어르신 오터치 방지: 개별 삭제도 한 번 확인
@@ -584,15 +608,15 @@ function init() {
   $('#btn-share').addEventListener('click', shareToFamily);
 
   // 하단 탭바 + 데스크톱 상단 내비 (홈/기록/도움말)
-  $$('[data-view]').forEach((b) => b.addEventListener('click', () => show(b.dataset.view)));
+  $$('[data-view]').forEach((b) => b.addEventListener('click', () => navigate(b.dataset.view)));
 
   // 약관·개인정보 처리방침 (푸터 링크 + 뒤로가기 화살표=이전페이지 / 홈버튼=처음화면)
-  $('#link-terms').addEventListener('click', (e) => { e.preventDefault(); show('terms'); });
-  $('#link-privacy').addEventListener('click', (e) => { e.preventDefault(); show('privacy'); });
+  $('#link-terms').addEventListener('click', (e) => { e.preventDefault(); navigate('terms'); });
+  $('#link-privacy').addEventListener('click', (e) => { e.preventDefault(); navigate('privacy'); });
   $('#btn-terms-back').addEventListener('click', goBack);
-  $('#btn-terms-home').addEventListener('click', () => show('home'));
+  $('#btn-terms-home').addEventListener('click', () => navigate('home'));
   $('#btn-privacy-back').addEventListener('click', goBack);
-  $('#btn-privacy-home').addEventListener('click', () => show('home'));
+  $('#btn-privacy-home').addEventListener('click', () => navigate('home'));
   // 기록·도움말 화면의 뒤로가기 화살표
   $('#btn-history-back').addEventListener('click', goBack);
   $('#btn-help-back').addEventListener('click', goBack);
@@ -614,6 +638,11 @@ function init() {
     setTimeout(() => btn.classList.remove('tap-flash'), 220);
   }, { passive: true });
 
+  // 휴대폰·브라우저 뒤로가기: 히스토리 상태의 화면으로 되돌아간다(사이트 이탈 방지).
+  window.addEventListener('popstate', (e) => {
+    show((e.state && e.state.view) || 'home');
+  });
+  history.replaceState({ view: 'home' }, '');
   show('home');
 }
 
