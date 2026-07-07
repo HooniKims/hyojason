@@ -48,6 +48,11 @@
         </button>
         <p class="pc-drop-hint" id="pc-drop-hint" hidden>또는 사진 파일을 여기로 끌어다 놓으세요</p>
         <button class="outline-btn" id="btn-sample"><span class="ic-inline" data-icon="file"></span> 샘플 서류로 체험하기</button>
+        <!-- PC에서만 노출: 휴대폰으로 열도록 QR 유도 (app.js가 감지·생성) -->
+        <div class="pc-mobile" id="pc-mobile" hidden>
+          <div class="pc-mobile-qr" id="pc-qr" aria-hidden="true"></div>
+          <p class="pc-mobile-text">📱 <b>휴대폰으로 열면 더 편해요</b><br>서류를 <b>바로 찍어</b> 올릴 수 있어요.<br>카메라로 이 QR을 스캔하세요.</p>
+        </div>
       </div>
     </section>
 

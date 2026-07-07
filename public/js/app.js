@@ -130,6 +130,33 @@ function ensureLoadingAnim() {
     .finally(() => { lottieLoading = false; });
 }
 
+/**
+ * PC 전용: '휴대폰으로 열기' QR을 지연 로드해 렌더한다.
+ * qrcode-generator(UMD)는 클래식 스크립트로 넣어야 window.qrcode 전역이 생기므로
+ * import 대신 <script> 주입으로 필요할 때만(=PC) 불러온다.
+ */
+function showMobileQr() {
+  const box = document.getElementById('pc-mobile');
+  const target = document.getElementById('pc-qr');
+  if (!box || !target) return;
+  // 로컬에서 열어봐도 스캔하면 실제 배포본으로 가도록 함
+  const url = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+    ? 'https://hyojason.vercel.app'
+    : location.origin;
+  const s = document.createElement('script');
+  s.src = '/js/vendor/qrcode.js';
+  s.onload = () => {
+    try {
+      const qr = window.qrcode(0, 'M');
+      qr.addData(url);
+      qr.make();
+      target.innerHTML = qr.createSvgTag({ cellSize: 6, margin: 2, scalable: true });
+      box.hidden = false;
+    } catch { /* 실패 시 QR 없이 진행 (텍스트 안내는 그대로) */ }
+  };
+  document.head.appendChild(s);
+}
+
 function toast(msg) {
   const el = $('#toast');
   el.textContent = msg;
@@ -635,6 +662,10 @@ function init() {
     if (ctaLabel) ctaLabel.textContent = '사진 파일 올리기';
     const hint = $('#pc-drop-hint');
     if (hint) hint.hidden = false;
+    // PC엔 카메라가 없으니 히어로 문구를 '파일 올리기'로 바꾸고 휴대폰 유도 QR을 띄운다.
+    const sub = $('.hero-sub');
+    if (sub) sub.innerHTML = '컴퓨터에서는 저장해 둔 서류·문자<br>사진 파일을 올려 확인하세요.<br>효자손이 쉽고 친절하게 설명해 드립니다.';
+    showMobileQr();
 
     const land = $('.landing');
     const onDrag = (e) => { e.preventDefault(); land.classList.add('drag-over'); };

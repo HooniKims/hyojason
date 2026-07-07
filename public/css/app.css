@@ -138,6 +138,16 @@ main { max-width: 640px; margin: 0 auto; padding: 1.2rem 1.2rem 2rem; }
 }
 .landing.drag-over { outline: 3px dashed var(--primary); outline-offset: -10px; border-radius: 1.2rem; background: var(--primary-soft); }
 
+/* PC 전용 '휴대폰으로 열기' QR 유도 (app.js가 PC에서만 노출) */
+.pc-mobile {
+  display: flex; align-items: center; gap: 1rem;
+  margin-top: 1.2rem; padding: 1rem 1.1rem;
+  background: var(--primary-soft); border: 2px solid var(--primary); border-radius: 1.2rem;
+}
+.pc-mobile-qr { flex: 0 0 auto; width: 108px; height: 108px; background: #fff; border-radius: 0.6rem; padding: 6px; }
+.pc-mobile-qr svg { width: 100%; height: 100%; display: block; }
+.pc-mobile-text { font-size: 1.02rem; font-weight: 700; line-height: 1.5; color: var(--ink); text-align: left; }
+
 /* 데스크톱 상단 내비 (모바일에선 숨김, 하단 탭바 사용) */
 .desktop-nav { display: none; }
 
