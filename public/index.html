@@ -46,6 +46,7 @@
           <span class="cta-emoji" data-icon="camera"></span>
           <span class="cta-label">시작하기</span>
         </button>
+        <p class="pc-drop-hint" id="pc-drop-hint" hidden>또는 사진 파일을 여기로 끌어다 놓으세요</p>
         <button class="outline-btn" id="btn-sample"><span class="ic-inline" data-icon="file"></span> 샘플 서류로 체험하기</button>
       </div>
     </section>
@@ -447,11 +448,23 @@
 <div class="overlay" id="source-dialog">
   <div class="sheet">
     <h2>어떻게 올릴까요?</h2>
-    <button class="full-btn" id="btn-src-camera"><span class="ic-inline" data-icon="camera"></span> 사진 찍기</button>
+    <button class="full-btn" id="btn-src-camera"><span class="ic-inline" data-icon="camera"></span> 카메라로 찍기</button>
     <p class="src-hint">종이 서류나 고지서를 찍을 때</p>
     <button class="full-btn" id="btn-src-gallery"><span class="ic-inline" data-icon="file"></span> 사진첩에서 고르기</button>
     <p class="src-hint">문자·카톡 화면을 저장해 둔 그림을 고를 때</p>
     <button class="close-btn" id="btn-src-close">닫기</button>
+  </div>
+</div>
+
+<!-- 가족에게 보내는 방법 선택: 문자(SMS) / 카톡·다른 앱 -->
+<div class="overlay" id="share-dialog">
+  <div class="sheet">
+    <h2>어떻게 보낼까요?</h2>
+    <button class="full-btn" id="btn-share-sms"><span class="ic-inline" data-icon="chat"></span> 문자(SMS)로 보내기</button>
+    <p class="src-hint">요약 내용을 글로 보냅니다</p>
+    <button class="full-btn" id="btn-share-app"><span class="ic-inline" data-icon="send"></span> 카카오톡·다른 앱으로 보내기</button>
+    <p class="src-hint">결과를 사진 카드로 보냅니다 (카톡·메시지 등에서 선택)</p>
+    <button class="close-btn" id="btn-share-close">닫기</button>
   </div>
 </div>
 

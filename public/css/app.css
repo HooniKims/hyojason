@@ -131,6 +131,13 @@ button.tap-flash { transform: scale(0.94); filter: brightness(0.93); }
 
 main { max-width: 640px; margin: 0 auto; padding: 1.2rem 1.2rem 2rem; }
 
+/* 데스크톱(카메라 없음) 전용: 끌어다 놓기 안내 + 드래그 중 강조 */
+.pc-drop-hint {
+  margin-top: 0.9rem; text-align: center;
+  font-size: 1rem; font-weight: 700; color: var(--gray);
+}
+.landing.drag-over { outline: 3px dashed var(--primary); outline-offset: -10px; border-radius: 1.2rem; background: var(--primary-soft); }
+
 /* 데스크톱 상단 내비 (모바일에선 숨김, 하단 탭바 사용) */
 .desktop-nav { display: none; }
 
@@ -246,7 +253,7 @@ main { max-width: 640px; margin: 0 auto; padding: 1.2rem 1.2rem 2rem; }
 
 .history-item { display: flex; gap: 0.5rem; margin-bottom: 0.8rem; }
 .history-open {
-  flex: 1; min-height: 4.6rem;
+  flex: 1; min-width: 0; min-height: 4.6rem;
   display: flex; align-items: center; gap: 0.9rem; text-align: left;
   background: var(--bg-soft); border: 2px solid var(--line); border-radius: 1.2rem;
   padding: 0.7rem 1rem;

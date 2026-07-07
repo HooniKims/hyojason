@@ -522,6 +522,25 @@ async function shareToFamily() {
   }
 }
 
+/** 문자(SMS)로 요약 내용을 글로 보낸다. (sms: 스킴은 이미지 첨부 불가 → 텍스트 요약) */
+function shareViaSms() {
+  if (!state.result) return;
+  const r = state.result;
+  const lines = [
+    '[효자손 안내]',
+    `${r.문서종류 || '서류'}: ${r.한줄요약 || ''}`.trim(),
+  ];
+  if (r.위험도 === '위험' && r.위험이유) lines.push(`⚠️ 위험할 수 있어요. ${r.위험이유}`);
+  else if (r.위험도 === '주의') lines.push('※ 한 번 더 확인이 필요해요.');
+  const todos = (r.할일 || []).slice(0, 2)
+    .map((t) => `- ${t.내용 || ''}${t.기한 ? ` (${t.기한}까지)` : ''}`.trim())
+    .filter((s) => s !== '-');
+  if (todos.length) { lines.push('할 일:'); lines.push(...todos); }
+  const body = lines.filter(Boolean).join('\n');
+  // 받는 사람은 문자앱에서 직접 고른다(가족). 커스텀 스킴이라 페이지는 그대로 유지됨.
+  window.location.href = `sms:?body=${encodeURIComponent(body)}`;
+}
+
 /* ---------- 지난 서류 다시 보기 ---------- */
 
 function riskDot(risk) {
@@ -592,9 +611,39 @@ function init() {
     }
     analyzePhoto(file);
   };
-  $('#btn-camera').addEventListener('click', () => $('#source-dialog').classList.add('active'));
+  // 기기 구분: 터치 기기(휴대폰·태블릿)만 카메라 촬영이 의미 있음.
+  // 데스크톱(카메라 없음)은 촬영 대신 '파일 올리기 + 끌어다 놓기'로 단순화한다.
+  const IS_TOUCH = window.matchMedia('(pointer: coarse)').matches;
+
+  $('#btn-camera').addEventListener('click', () => {
+    if (IS_TOUCH) $('#source-dialog').classList.add('active');
+    else $('#file-gallery').click(); // PC: 카메라 없음 → 파일 선택 바로
+  });
   $('#btn-src-camera').addEventListener('click', () => $('#file-camera').click());
   $('#btn-src-gallery').addEventListener('click', () => $('#file-gallery').click());
+
+  // 데스크톱 전용: 버튼 문구를 '사진 파일 올리기'로, 끌어다 놓기 안내·수용
+  if (!IS_TOUCH) {
+    const ctaLabel = $('#btn-camera .cta-label');
+    if (ctaLabel) ctaLabel.textContent = '사진 파일 올리기';
+    const hint = $('#pc-drop-hint');
+    if (hint) hint.hidden = false;
+
+    const land = $('.landing');
+    const onDrag = (e) => { e.preventDefault(); land.classList.add('drag-over'); };
+    const onLeave = (e) => { if (e.target === land) land.classList.remove('drag-over'); };
+    land.addEventListener('dragenter', onDrag);
+    land.addEventListener('dragover', onDrag);
+    land.addEventListener('dragleave', onLeave);
+    land.addEventListener('drop', (e) => {
+      e.preventDefault();
+      land.classList.remove('drag-over');
+      const file = e.dataTransfer?.files?.[0];
+      if (!file) return;
+      if (file.type && !file.type.startsWith('image/')) { toast('사진 파일을 올려주세요.'); return; }
+      analyzePhoto(file);
+    });
+  }
   $('#btn-src-close').addEventListener('click', () => $('#source-dialog').classList.remove('active'));
   $('#file-camera').addEventListener('change', pickFile);
   $('#file-gallery').addEventListener('change', pickFile);
@@ -612,7 +661,11 @@ function init() {
   $('#btn-speak').addEventListener('click', toggleSpeak);
   $('#btn-font').addEventListener('click', cycleFont);
   $('#btn-save').addEventListener('click', saveCard);
-  $('#btn-share').addEventListener('click', shareToFamily);
+  // 가족에게: 문자(SMS) / 카톡·다른 앱 중 선택
+  $('#btn-share').addEventListener('click', () => $('#share-dialog').classList.add('active'));
+  $('#btn-share-sms').addEventListener('click', () => { $('#share-dialog').classList.remove('active'); shareViaSms(); });
+  $('#btn-share-app').addEventListener('click', () => { $('#share-dialog').classList.remove('active'); shareToFamily(); });
+  $('#btn-share-close').addEventListener('click', () => $('#share-dialog').classList.remove('active'));
 
   // 하단 탭바 + 데스크톱 상단 내비 (홈/기록/도움말)
   $$('[data-view]').forEach((b) => b.addEventListener('click', () => navigate(b.dataset.view)));
