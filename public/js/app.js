@@ -583,7 +583,14 @@ function init() {
     const file = e.target.files?.[0];
     e.target.value = '';
     $('#source-dialog').classList.remove('active');
-    if (file) analyzePhoto(file);
+    if (!file) return;
+    // 사진첩 입력은 형식 제한을 풀어(갤러리 앱 노출) 사진 외 파일도 고를 수 있으므로
+    // 이미지가 아니면 안내만 하고 멈춘다. (형식 미상은 통과시켜 디코딩에 맡김)
+    if (file.type && !file.type.startsWith('image/')) {
+      toast('사진 파일을 골라주세요.');
+      return;
+    }
+    analyzePhoto(file);
   };
   $('#btn-camera').addEventListener('click', () => $('#source-dialog').classList.add('active'));
   $('#btn-src-camera').addEventListener('click', () => $('#file-camera').click());

@@ -30,8 +30,11 @@
   </header>
   <main class="landing">
     <!-- 카메라 촬영용(capture)과 사진첩 선택용(문자·카톡 스크린샷)을 분리 -->
+    <!-- 사진첩 입력은 accept를 두지 않는다: 갤럭시 등에서 accept="image/*"가
+         갤러리 앱을 선택창에서 걸러내는 경우가 있어, 제한을 풀어 갤러리가 뜨게 한다.
+         (사진 외 파일 선택은 pickFile에서 형식 검사로 걸러 안내) -->
     <input type="file" id="file-camera" accept="image/*" capture="environment" hidden>
-    <input type="file" id="file-gallery" accept="image/*" hidden>
+    <input type="file" id="file-gallery" hidden>
 
     <!-- Hero -->
     <section class="hero">
