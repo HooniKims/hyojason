@@ -1,14 +1,22 @@
 /**
- * /api/tts — 음성 안내 합성 (Google Gemini TTS)
+ * /api/tts — 음성 안내 합성 (1순위 ElevenLabs, 2순위 Google Gemini TTS)
  *
  * 브라우저 기본 음성(Web Speech)보다 훨씬 자연스러운 한국어 음성을 제공한다.
- * - 모델: gemini-2.5-flash-preview-tts (raw PCM L16/24kHz 반환)
- * - 서버에서 PCM에 WAV 헤더를 붙여 audio/wav로 내려준다(브라우저 <audio> 재생 가능).
- * - 키는 서버 환경변수에만. 실패 시 클라이언트가 Web Speech로 폴백하므로 서비스는 안 멈춘다.
+ * - 1순위: ElevenLabs (ELEVENLABS_API_KEY 설정 시). 지정 Voice ID로 mp3 반환.
+ * - 2순위: Google Gemini TTS. raw PCM(L16/24kHz)에 WAV 헤더를 붙여 audio/wav로 내려준다.
+ * - 둘 다 미설정/실패면 502 → 클라이언트가 Web Speech(ko-KR)로 폴백하므로 서비스는 안 멈춘다.
+ * - 모든 키는 서버 환경변수에만 둔다.
  */
 
 export const config = { maxDuration: 30 };
 
+// ── ElevenLabs (1순위) ────────────────────────────────────
+const EL_KEY = process.env.ELEVENLABS_API_KEY;
+const EL_VOICE = process.env.ELEVENLABS_VOICE_ID; // 미설정 시 아래 기본 목소리
+const EL_DEFAULT_VOICE = '21m00Tcm4TlvDq8ikWAM'; // Rachel (범용 폴백)
+const EL_MODEL = process.env.ELEVENLABS_MODEL || 'eleven_flash_v2_5'; // 빠르고 한국어 지원
+
+// ── Gemini (2순위) ────────────────────────────────────────
 const MODEL = 'gemini-3.1-flash-tts-preview'; // 최신 Gemini 3.1 Flash TTS (자연스러운 한국어 음성)
 const VOICE = 'Achernar'; // 부드럽고 차분한 목소리 (어르신 청취용)
 const MAX_TEXT = 1500;    // 음성안내는 3~5문장이라 충분
@@ -69,13 +77,62 @@ function pcmToWav(pcm, sampleRate) {
   return Buffer.concat([header, pcm]);
 }
 
+/** 1순위: ElevenLabs. 지정 Voice ID로 mp3를 합성해 {buffer, contentType} 반환. */
+async function synthElevenLabs(text) {
+  const voice = EL_VOICE || EL_DEFAULT_VOICE;
+  const r = await fetch(
+    `https://api.elevenlabs.io/v1/text-to-speech/${voice}?output_format=mp3_44100_128`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'xi-api-key': EL_KEY },
+      body: JSON.stringify({ text, model_id: EL_MODEL }),
+    },
+  );
+  if (!r.ok) throw new Error(`elevenlabs tts http ${r.status}`);
+  const buffer = Buffer.from(await r.arrayBuffer());
+  if (!buffer.length) throw new Error('elevenlabs tts empty');
+  return { buffer, contentType: 'audio/mpeg' };
+}
+
+/** 2순위: Google Gemini TTS. raw PCM에 WAV 헤더를 붙여 {buffer, contentType} 반환. */
+async function synthGemini(text) {
+  const key = process.env.GEMINI_API_KEY;
+  const r = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
+      // 텍스트만 그대로 넣는다. 지시문을 접두어로 붙이면 TTS가 그 지시문까지
+      // 소리 내어 읽어 매우 어색해진다(형식상 별도 스타일 프롬프트 불가한 케이스).
+      body: JSON.stringify({
+        contents: [{ parts: [{ text }] }],
+        generationConfig: {
+          responseModalities: ['AUDIO'],
+          speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: VOICE } } },
+        },
+      }),
+    },
+  );
+  if (!r.ok) throw new Error(`gemini tts http ${r.status}`);
+  const data = await r.json();
+  const part = data?.candidates?.[0]?.content?.parts?.[0]?.inlineData;
+  if (!part?.data) throw new Error('gemini tts empty');
+  // mimeType 예: "audio/L16;codec=pcm;rate=24000" → sampleRate 파싱
+  const rateMatch = /rate=(\d+)/.exec(part.mimeType || '');
+  const sampleRate = rateMatch ? Number(rateMatch[1]) : 24000;
+  const pcm = Buffer.from(part.data, 'base64');
+  return { buffer: pcmToWav(pcm, sampleRate), contentType: 'audio/wav' };
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.status(405).json({ error: '허용되지 않는 요청입니다' });
     return;
   }
-  const key = process.env.GEMINI_API_KEY;
-  if (!key) { res.status(503).json({ error: 'tts 미설정' }); return; }
+  if (!EL_KEY && !process.env.GEMINI_API_KEY) {
+    res.status(503).json({ error: 'tts 미설정' });
+    return;
+  }
 
   const ip = (req.headers['x-forwarded-for'] || 'unknown').split(',')[0].trim();
   if (await isRateLimited(ip)) { res.status(429).json({ error: '잠시 후 다시 시도해주세요' }); return; }
@@ -88,36 +145,19 @@ export default async function handler(req, res) {
     }
     const clean = text.slice(0, MAX_TEXT);
 
-    const r = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
-        // 텍스트만 그대로 넣는다. 지시문을 접두어로 붙이면 TTS가 그 지시문까지
-        // 소리 내어 읽어 매우 어색해진다(형식상 별도 스타일 프롬프트 불가한 케이스).
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: clean }] }],
-          generationConfig: {
-            responseModalities: ['AUDIO'],
-            speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: VOICE } } },
-          },
-        }),
-      },
-    );
-    if (!r.ok) throw new Error(`gemini tts http ${r.status}`);
-    const data = await r.json();
-    const part = data?.candidates?.[0]?.content?.parts?.[0]?.inlineData;
-    if (!part?.data) throw new Error('tts empty');
+    // 1순위 ElevenLabs → 실패 시 2순위 Gemini → 둘 다 실패면 502(클라이언트가 Web Speech 폴백)
+    let audio = null;
+    if (EL_KEY) {
+      try { audio = await synthElevenLabs(clean); } catch { audio = null; }
+    }
+    if (!audio && process.env.GEMINI_API_KEY) {
+      audio = await synthGemini(clean);
+    }
+    if (!audio) throw new Error('no tts provider succeeded');
 
-    // mimeType 예: "audio/L16;codec=pcm;rate=24000" → sampleRate 파싱
-    const rateMatch = /rate=(\d+)/.exec(part.mimeType || '');
-    const sampleRate = rateMatch ? Number(rateMatch[1]) : 24000;
-    const pcm = Buffer.from(part.data, 'base64');
-    const wav = pcmToWav(pcm, sampleRate);
-
-    res.setHeader('Content-Type', 'audio/wav');
+    res.setHeader('Content-Type', audio.contentType);
     res.setHeader('Cache-Control', 'no-store');
-    res.status(200).send(wav);
+    res.status(200).send(audio.buffer);
   } catch {
     res.status(502).json({ error: '음성을 만들지 못했어요' });
   }

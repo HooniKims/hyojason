@@ -14,3 +14,4 @@ node_modules
 
 # 작업용 임시
 _workspace/
+.env*
