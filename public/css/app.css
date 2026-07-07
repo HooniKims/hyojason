@@ -423,18 +423,26 @@ main { max-width: 640px; margin: 0 auto; padding: 1.2rem 1.2rem 2rem; }
 }
 
 /* ---------- 다이얼로그/로딩/토스트 ---------- */
+/* 오버레이: display 토글 대신 opacity+visibility로 부드럽게 켜지고/꺼지게.
+   (display:none은 트랜지션이 안 먹어서, 항상 flex로 두고 보이기만 전환) */
 .overlay {
   position: fixed; inset: 0; z-index: 60;
   background: rgba(0,0,0,0.55);
-  display: none; align-items: flex-end; justify-content: center;
+  display: flex; align-items: flex-end; justify-content: center;
+  opacity: 0; visibility: hidden;
+  transition: opacity 0.28s ease, visibility 0.28s ease;
 }
-.overlay.active { display: flex; }
+.overlay.active { opacity: 1; visibility: visible; }
 .sheet {
   background: #fff; border-radius: 1.6rem 1.6rem 0 0; width: 100%; max-width: 640px;
   padding: 1.4rem 1.2rem calc(1.6rem + env(safe-area-inset-bottom));
   border-top: 4px solid var(--ink);
   max-height: 88vh; overflow-y: auto;
+  /* 아래에서 부드럽게 올라오고, 닫힐 때 아래로 내려간다 */
+  transform: translateY(100%);
+  transition: transform 0.34s cubic-bezier(0.22, 1, 0.36, 1);
 }
+.overlay.active .sheet { transform: translateY(0); }
 .sheet h2 { font-size: 1.4rem; font-weight: 900; margin-bottom: 1rem; }
 .src-hint { font-size: 1rem; font-weight: 700; color: var(--gray); margin: 0.35rem 0 1.1rem 0.3rem; }
 /* 선택 다이얼로그가 열릴 때 두 아이콘이 부드럽게 살아나는 미세 움직임 (CSS, 런타임 0) */
@@ -470,9 +478,11 @@ main { max-width: 640px; margin: 0 auto; padding: 1.2rem 1.2rem 2rem; }
 #loading {
   position: fixed; inset: 0; z-index: 70;
   background: rgba(255,255,255,0.96);
-  display: none; flex-direction: column; align-items: center; justify-content: center; gap: 1.2rem;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.2rem;
+  opacity: 0; visibility: hidden;
+  transition: opacity 0.25s ease, visibility 0.25s ease;
 }
-#loading.active { display: flex; }
+#loading.active { opacity: 1; visibility: visible; }
 /* 로딩 애니메이션: Lottie(손주가 서류 읽는 모습)를 넣고, 로드 전·실패 시엔 CSS 스피너 폴백 */
 #loading-anim { width: 7.5rem; height: 7.5rem; display: flex; align-items: center; justify-content: center; }
 #loading-anim svg { width: 100%; height: 100%; }
@@ -486,14 +496,21 @@ main { max-width: 640px; margin: 0 auto; padding: 1.2rem 1.2rem 2rem; }
 #loading-text { font-size: 1.4rem; font-weight: 900; text-align: center; padding: 0 2rem; }
 
 #toast {
-  position: fixed; left: 50%; bottom: 9.5rem; transform: translateX(-50%);
-  z-index: 80; display: none;
+  position: fixed; left: 50%; bottom: 9.5rem;
+  z-index: 80; display: block;
   background: var(--ink); color: #fff;
   font-size: 1.1rem; font-weight: 800;
   padding: 1rem 1.4rem; border-radius: 1.1rem;
   max-width: 90vw; text-align: center;
+  /* 아래에서 살짝 떠오르며 나타나고, 사라질 때 다시 내려가며 페이드아웃 */
+  opacity: 0; visibility: hidden;
+  transform: translateX(-50%) translateY(0.8rem);
+  transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s ease;
 }
-#toast.active { display: block; }
+#toast.active {
+  opacity: 1; visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
 
 @media (prefers-reduced-motion: reduce) {
   .spinner { animation-duration: 2.5s; }
@@ -502,6 +519,9 @@ main { max-width: 640px; margin: 0 auto; padding: 1.2rem 1.2rem 2rem; }
   .big-cta .cta-emoji,
   #source-dialog.active #btn-src-camera .ic,
   #source-dialog.active #btn-src-gallery .ic { animation: none; }
+  /* 미끄러지는 움직임은 끄고 부드러운 페이드만 남긴다 */
+  .sheet, .overlay.active .sheet { transform: none; transition: opacity 0.2s ease; }
+  #toast, #toast.active { transform: translateX(-50%); }
 }
 
 /* ══════════════════════════════════════════════════════
