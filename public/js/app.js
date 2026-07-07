@@ -615,6 +615,13 @@ function init() {
   // 데스크톱(카메라 없음)은 촬영 대신 '파일 올리기 + 끌어다 놓기'로 단순화한다.
   const IS_TOUCH = window.matchMedia('(pointer: coarse)').matches;
 
+  // 삼성 인터넷은 안드로이드 포토 피커 대신 자체 선택창(카메라/내 파일/파일)을 띄워
+  // 갤러리 그리드가 안 보인다. 이 브라우저에서만 '내 파일' 안내 힌트를 노출한다.
+  if (/SamsungBrowser/i.test(navigator.userAgent)) {
+    const sh = $('#samsung-gallery-hint');
+    if (sh) sh.hidden = false;
+  }
+
   $('#btn-camera').addEventListener('click', () => {
     if (IS_TOUCH) $('#source-dialog').classList.add('active');
     else $('#file-gallery').click(); // PC: 카메라 없음 → 파일 선택 바로
