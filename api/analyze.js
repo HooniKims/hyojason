@@ -283,6 +283,9 @@ async function callOpenAI(imageBase64, mimeType) {
       model: 'gpt-5.4-nano',
       reasoning_effort: 'low',        // 단순 추출 작업 — 비용·지연 최소화
       max_completion_tokens: 3000,    // 추론 토큰 + JSON 출력 여유분
+      // 이 모델은 temperature를 지원하지 않음(기본 1 고정). 대신 seed를 고정해
+      // 같은 사진은 최대한 같은 결과가 나오도록 한다(재현성 보조, best-effort).
+      seed: 42,
       messages: [
         { role: 'system', content: SYSTEM_PROMPT },
         {

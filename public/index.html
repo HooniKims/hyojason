@@ -30,11 +30,11 @@
   </header>
   <main class="landing">
     <!-- 카메라 촬영용(capture)과 사진첩 선택용(문자·카톡 스크린샷)을 분리 -->
-    <!-- 사진첩 입력은 accept를 두지 않는다: 갤럭시 등에서 accept="image/*"가
-         갤러리 앱을 선택창에서 걸러내는 경우가 있어, 제한을 풀어 갤러리가 뜨게 한다.
-         (사진 외 파일 선택은 pickFile에서 형식 검사로 걸러 안내) -->
+    <!-- 사진첩 입력: accept="image/*" + capture 없음 → 안드로이드 '포토 피커'(사진첩 그리드)를
+         연다. accept를 빼면 모든 형식이 허용돼 일반 선택창(카메라·캠코더·파일)만 뜨고
+         갤러리 그리드가 안 나오므로, 반드시 image/*를 유지한다. (카메라는 capture 입력이 담당) -->
     <input type="file" id="file-camera" accept="image/*" capture="environment" hidden>
-    <input type="file" id="file-gallery" hidden>
+    <input type="file" id="file-gallery" accept="image/*" hidden>
 
     <!-- Hero -->
     <section class="hero">
